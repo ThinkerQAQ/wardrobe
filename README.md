@@ -30,3 +30,5 @@ go build .
 ```
 
 For architecture and optional adapter contracts, see [Order source API](docs/ORDER_SOURCES.md). The public build works without optional extensions.
+
+Release archives include full third-party license texts and version reports; see [third-party notices](THIRD_PARTY_NOTICES.md).
