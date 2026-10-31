@@ -1,0 +1,85 @@
+name: Publish binaries with one-click setup
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { goos: windows, goarch: amd64, format: zip }
+          - { goos: windows, goarch: arm64, format: zip }
+          - { goos: linux, goarch: amd64, format: tar.gz }
+          - { goos: linux, goarch: arm64, format: tar.gz }
+          - { goos: darwin, goarch: amd64, format: tar.gz }
+          - { goos: darwin, goarch: arm64, format: tar.gz }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - name: Build and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/audit-public.sh
+          mkdir -p staging
+          GOOS="${{ matrix.goos }}" GOARCH="${{ matrix.goarch }}" CGO_ENABLED=0 go build -trimpath -o "staging/wardrobe${{ matrix.goos == 'windows' && '.exe' || '' }}" .
+          cp config.example.toml LICENSE README.md README_ZH.md SECURITY.md SECURITY_ZH.md CONTRIBUTING.md CONTRIBUTING_ZH.md staging/
+          bash scripts/audit-public.sh
+          mkdir -p staging/docs staging/scripts
+          cp docs/*.md staging/docs/
+          bash scripts/audit-public.sh
+          mkdir -p staging/browser-extension
+          cp browser-extension/manifest.json browser-extension/*.js browser-extension/panel.html browser-extension/panel.css staging/browser-extension/
+          bash scripts/audit-public.sh
+          mkdir -p staging/browser-extension/icons
+          cp browser-extension/icons/* staging/browser-extension/icons/
+          bash scripts/audit-public.sh
+          mkdir -p staging/brand
+          cp brand/wardrobe.ico brand/wardrobe-mark.svg staging/brand/
+          bash scripts/audit-public.sh
+          mkdir -p staging/browser-extension/app
+          cp browser-extension/app/* staging/browser-extension/app/
+          if [ "${{ matrix.goos }}" = windows ]; then
+            cp Setup-Wardrobe.cmd staging/
+            cp scripts/Setup-Wardrobe.ps1 scripts/Start-Wardrobe-Local.ps1 scripts/Start-Wardrobe-Tunnel.ps1 staging/scripts/
+            ( cd staging && zip -q -r "../wardrobe-${{ matrix.goos }}-${{ matrix.goarch }}.zip" . )
+          else
+            cp scripts/setup.sh scripts/start-local.sh scripts/start-tunnel.sh staging/scripts/
+            chmod +x staging/wardrobe staging/scripts/*.sh
+            tar -czf "wardrobe-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" -C staging .
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: package-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: wardrobe-${{ matrix.goos }}-${{ matrix.goarch }}.*
+          if-no-files-found: error
+  publish:
+    runs-on: ubuntu-latest
+    needs: package
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: package-*
+          merge-multiple: true
+          path: dist
+      - name: SHA256 manifest
+        run: |
+          cd dist
+          sha256sum wardrobe-* > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          files: dist/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true

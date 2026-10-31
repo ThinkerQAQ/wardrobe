@@ -1,0 +1,8 @@
+# Copy to Data/config.toml beside the executable.
+# CLI flags override these values. Relative data_dir is relative to this file.
+[server]
+address = "127.0.0.1:17936"
+open_browser = true
+
+[storage]
+data_dir = "."

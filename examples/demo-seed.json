@@ -1,0 +1,60 @@
+{
+  "products": [
+    {
+      "id": "DEMO-TOP-01",
+      "name": "Example shirt",
+      "category": "Tops",
+      "color": "Blue",
+      "size": "Unknown",
+      "image": "",
+      "owned": "Unknown",
+      "rating": 0,
+      "ratingSource": "unrated",
+      "fields": {
+        "source": "fictional demo"
+      }
+    },
+    {
+      "id": "DEMO-PANTS-01",
+      "name": "Example pants",
+      "category": "Pants",
+      "color": "Black",
+      "size": "Unknown",
+      "image": "",
+      "owned": "Unknown",
+      "rating": 0,
+      "ratingSource": "unrated",
+      "fields": {
+        "source": "fictional demo"
+      }
+    },
+    {
+      "id": "DEMO-SHOES-01",
+      "name": "Example shoes",
+      "category": "Shoes",
+      "color": "Brown",
+      "size": "Unknown",
+      "image": "",
+      "owned": "Unknown",
+      "rating": 0,
+      "ratingSource": "unrated",
+      "fields": {
+        "source": "fictional demo"
+      }
+    }
+  ],
+  "looks": [
+    {
+      "id": "DEMO-LOOK-01",
+      "name": "Example outfit",
+      "scene": "Casual",
+      "slots": {
+        "inner": "DEMO-TOP-01",
+        "pants": "DEMO-PANTS-01",
+        "shoes": "DEMO-SHOES-01"
+      },
+      "rating": 0
+    }
+  ],
+  "notes": []
+}

@@ -1,0 +1,6 @@
+{
+  "name": "wardrobe-local",
+  "version": "0.5.3",
+  "description": "Local-first AI wardrobe with inventory, outfit previews, hairstyles, body sizing and MCP",
+  "skills": "./skills/"
+}

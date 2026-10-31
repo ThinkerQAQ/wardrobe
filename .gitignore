@@ -1,0 +1,33 @@
+Data/
+data/
+*.exe
+wardrobe
+*.db
+*.db-*
+*.sqlite*
+.env
+.env.*
+!.env.example
+mcp-token
+backups/
+exports/
+*.log
+config.toml
+*.local.toml
+seed.json
+source.json
+images/
+photos/
+*.jpg
+*.jpeg
+*.png
+*.heic
+*.pem
+*.key
+*.p12
+
+# Optional private installer data when experimenting within a source checkout
+Private/
+
+# Public, generated brand icons are safe to commit; private photos stay ignored.
+!browser-extension/icons/*.png

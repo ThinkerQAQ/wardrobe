@@ -1,0 +1,308 @@
+:root{font-family:Inter,"Segoe UI","Microsoft YaHei",sans-serif;color:#282c29;background:#f5f4ef;--green:#345548;--line:#dedfd7}*{box-sizing:border-box}body{margin:0}header{padding:26px 4vw;display:flex;align-items:center;gap:40px;border-bottom:1px solid var(--line);background:#fafaf6}small{letter-spacing:2px;color:#748176;font-size:10px}h1{font-size:26px;margin:4px 0}h1 span{font-size:11px;margin-left:12px;background:#e4eadf;padding:4px 8px;border-radius:8px;font-weight:400}nav{display:flex;gap:8px;flex:1}button,.button,select,input,textarea{font:inherit}button,.button{border:1px solid var(--line);background:#fff;color:inherit;padding:10px 15px;border-radius:9px;cursor:pointer;text-decoration:none;font-size:14px}button:hover,.button:hover{border-color:#627a67;background:#f0f3eb}button:disabled{opacity:.55;cursor:wait}nav button{background:transparent;border-color:transparent}nav .active,.primary{background:var(--green);color:#fff;border-color:var(--green)}main{padding:26px 4vw 60px}.intro{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}h2{font-size:23px;font-weight:600;margin:0 0 10px}p{line-height:1.65;color:#6a7169;font-size:14px}#filters{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0}input,select,textarea{border:1px solid var(--line);border-radius:8px;padding:11px;background:#fff;color:inherit}input:focus,select:focus,textarea:focus{outline:2px solid #86a38e}#search{min-width:260px;flex:1}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:18px}.card{background:#fff;border:1px solid var(--line);border-radius:13px;overflow:hidden;cursor:pointer}.card:hover{box-shadow:0 6px 20px #23352610;border-color:#95a391}.imageBox{background:#eceee7;aspect-ratio:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}.imageBox img{width:100%;height:100%;object-fit:contain}.imageBox .missing{font-size:13px;color:#818b80;text-align:center;padding:20px}.cardBody{padding:14px}.cardTitle{font-size:14px;line-height:1.5;height:42px;overflow:hidden;margin:8px 0}.meta{font-size:12px;color:#7a8279}.stars{color:#ac8243;font-size:14px;margin-top:10px}.tag{display:inline-block;background:#eef1e9;color:#4e6756;padding:3px 7px;border-radius:5px;font-size:11px}.card a{font-size:12px;color:var(--green)}.lookGrid{grid-template-columns:repeat(auto-fill,minmax(350px,1fr))}.lookCard{padding:18px;background:#fff;border:1px solid var(--line);border-radius:12px}.lookImages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:14px 0}.lookImages .imageBox{border-radius:6px}.photo{max-height:260px;width:100%;object-fit:contain;background:#eeeee8;border-radius:8px;cursor:zoom-in}.lookCard h3{margin:8px 0}.lookCard .meta{margin:8px 0}.lookCard .slotLabel{font-size:10px;text-align:center;margin-top:4px}.empty{padding:45px;color:#7a8279;grid-column:1/-1;text-align:center}dialog{border:1px solid var(--line);border-radius:16px;padding:24px;width:min(1000px,95vw);max-height:92vh;box-shadow:0 20px 100px #0004}dialog::backdrop{background:#18271d70;backdrop-filter:blur(3px)}.dialogTop{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}.dialogTop h2{margin:0}.detailLayout{display:grid;grid-template-columns:280px 1fr;gap:24px}.detailLayout .imageBox{border-radius:10px;cursor:zoom-in}.detailLayout h3{line-height:1.7;font-size:18px;margin:0 0 15px}.fieldGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}label{display:flex;flex-direction:column;gap:7px;font-size:13px;color:#566153}textarea{min-height:85px;resize:vertical}.wide{grid-column:1/-1}.detailsTable{margin-top:22px;width:100%;font-size:13px;border-collapse:collapse}.detailsTable th{text-align:left;width:170px;color:#707970;font-weight:400}.detailsTable td,.detailsTable th{padding:11px 8px;border-bottom:1px solid #e8eae4;vertical-align:top;white-space:pre-wrap;word-break:break-word}.detailsTable a{color:var(--green)}.slots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:25px 0}.slot{padding:8px;border:1px solid var(--line);border-radius:9px;cursor:pointer;background:#fff;min-width:0}.slot .imageBox{border-radius:5px}.slot b{display:block;font-size:12px;margin:8px 0}.slot span{font-size:11px;display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.dialogActions{position:sticky;bottom:-24px;background:white;border-top:1px solid var(--line);padding:18px 0;display:flex;justify-content:space-between;align-items:center}.dialogActions span{font-size:13px;color:#687b68}#picker .grid{margin-top:18px;grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}#pickerSearch{width:50%;margin-right:10px}#toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#284936;color:white;padding:12px 24px;border-radius:9px;display:none;z-index:100}.notesGrid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}#lightbox{width:min(1000px,95vw);text-align:right}#largeImage{display:block;max-width:100%;max-height:80vh;margin:auto}a:focus,button:focus-visible{outline:2px solid #86a38e}@media(max-width:800px){header{flex-wrap:wrap;gap:15px}nav{order:3;flex-basis:100%}.intro{gap:15px}.intro h2{font-size:19px}.detailLayout{grid-template-columns:1fr}.detailLayout>.imageBox{max-width:260px}.slots{grid-template-columns:repeat(4,1fr)}.grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.lookGrid,.notesGrid{grid-template-columns:1fr}.fieldGrid{grid-template-columns:1fr}.detailsTable th{width:100px}#pickerSearch{width:100%;margin-bottom:10px}}
+.lookActions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+button.danger{border-color:#d9b2a8;color:#913b2b;background:#fff}
+button.danger:hover{background:#fff2ef;border-color:#b76554}
+[hidden]{display:none!important}
+@media(max-width:800px){.slots{grid-template-columns:repeat(3,minmax(0,1fr))}.lookImages{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+.slotGroupTitle{font-size:16px;font-weight:600;margin:24px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+
+.bodyPanel{min-width:0;padding:18px;background:white;border:1px solid var(--line);border-radius:14px}
+.bodyPanel h3{margin:0 0 14px}
+.bodyPanel table{width:100%}
+.bodyPanel input[type=number]{width:86px;max-width:100%;padding:6px;border:1px solid var(--line);border-radius:6px}
+.widePanel{grid-column:1/-1}
+.hairSelection{max-width:250px}
+.hairSelection .hairSlot{width:100%;text-align:center}
+.hairSelection .imageBox{min-height:170px}
+.hairCard .imageBox{aspect-ratio:4/5;max-height:320px}
+@media(max-width:750px){.bodyPanel{grid-column:1/-1}}
+
+/* Local workflow editor: bundled defaults + versioned SQLite overrides. */
+.skillLayout{display:grid;grid-template-columns:minmax(220px,270px) minmax(0,1fr);gap:20px;align-items:start}
+.skillSidebar,.skillWorkspace{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}
+.skillSidebar h3,.skillTop h3{margin:0 0 8px;font-size:17px}
+.skillList{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+.skillList button{text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:5px;width:100%;border:1px solid var(--line);background:#fafbf8}
+.skillList button.skillSelected{border-color:var(--green);background:#edf3ee}
+.skillList button strong{font-size:14px}
+.skillList button small{font-size:11px;color:#667e71;letter-spacing:0}
+.skillTop{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.skillActions{display:flex;gap:10px;flex-wrap:wrap}
+.skillHint{padding:10px 12px;border-left:3px solid #8ba89b;background:#f4f7f2;line-height:1.75}
+.skillMode{display:flex;gap:8px;margin:16px 0}
+.skillMode button.active{background:var(--green);color:white}
+.skillEditorLabel{display:block;font-weight:600;margin-bottom:8px}
+#skillContent,.skillPreview{font-family:ui-monospace,SFMono-Regular,Consolas,Monaco,monospace;font-size:13px;line-height:1.7;width:100%;min-height:56vh;padding:16px;white-space:pre-wrap;overflow:auto;tab-size:2}
+#skillContent{resize:vertical;border:1px solid #b8c6b9}
+.skillPreview{background:#f7f8f5;border:1px solid var(--line);border-radius:8px;word-break:break-word}
+#skillStatus{min-height:1.5em}
+@media(max-width:800px){.skillLayout{grid-template-columns:1fr}.skillList{flex-direction:row;overflow-x:auto}.skillList button{min-width:180px}.skillActions{width:100%}}
+/* Unified local order library */
+.ordersPanel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}
+.ordersToolbar{display:flex;justify-content:space-between;align-items:center;gap:22px;flex-wrap:wrap}
+.ordersToolbar h3{font-size:18px;margin:0 0 8px}
+.ordersActions{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+.ordersActions label{font-size:12px;gap:5px}
+.ordersActions input[type=file]{max-width:280px;font-size:12px;padding:8px}
+.orderStats{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.orderStat{border:1px solid var(--line);background:#f6f8f4;padding:12px 18px;border-radius:10px;display:flex;gap:6px;flex-direction:column;min-width:130px}
+.orderStat strong{font-size:23px;font-weight:600}
+.orderFilters{display:flex;gap:9px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--line)}
+.orderFilters input{flex:1;min-width:210px}
+.orderList{max-height:65vh;overflow-y:auto}
+.orderRow{display:flex;justify-content:space-between;gap:22px;border-bottom:1px solid var(--line);padding:18px 6px;align-items:center}
+.orderRow:last-child{border-bottom:0}
+.orderInfo{min-width:0;flex:1}
+.orderInfo h4{font-size:14px;font-weight:600;margin:10px 0;line-height:1.5}
+.orderInfo p{margin:7px 0}
+.orderRowMeta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.orderRowActions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:410px}
+.orderRowActions select{min-width:120px;max-width:180px;font-size:12px;padding:8px}
+.orderRowActions a{white-space:nowrap;font-size:12px;color:var(--green)}
+#ordersStatus{margin-top:16px;min-height:20px}
+@media(max-width:850px){.orderRow{align-items:flex-start;flex-direction:column}.orderRowActions{max-width:none;justify-content:flex-start}.orderList{max-height:none}}
+
+/* Optional, non-intrusive local extension installation help. */
+.ordersExtensionGuide{margin:12px 0;padding:14px 16px;border:1px solid var(--line);background:#f6f8f4;border-radius:8px;font-size:13px;line-height:1.55}
+.ordersExtensionGuide p{margin:7px 0}
+.ordersExtensionGuide code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;white-space:normal;overflow-wrap:anywhere;font-size:12px}
+
+.headerTools{display:flex;align-items:center;gap:8px;white-space:nowrap}
+#skillsTab.active{background:var(--green);color:#fff;border-color:var(--green)}
+@media(max-width:800px){.headerTools{margin-left:auto}nav{overflow-x:auto;min-width:0;white-space:nowrap}}
+/* BlogCTL-style shared application host: compact side panel, full desktop page. */
+.uiLocaleControl{font-size:12px;display:flex;flex-direction:row;align-items:center;gap:6px;white-space:nowrap}
+.uiLocaleControl select{font-size:12px;padding:7px 9px;min-width:84px}
+.extensionConnection{margin-bottom:20px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
+.extensionConnection input{width:100%;margin:9px 0}
+.extensionConnectionActions{display:flex;gap:8px;flex-wrap:wrap}
+.extension-unpaired main > :not(#extensionConnection){display:none!important}
+.extension-host body{min-width:335px;overflow-x:hidden;background:#f5f4ef}
+.extension-host header{padding:14px;display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.extension-host header h1{font-size:19px;margin:2px 0}
+.extension-host nav{order:3;width:100%;flex-basis:100%;overflow-x:auto;white-space:nowrap;gap:4px;padding-bottom:5px}
+.extension-host nav button{font-size:12px;padding:7px 9px;flex-shrink:0}
+.extension-host .headerTools{margin-left:auto;gap:4px}
+.extension-host .headerTools > .button{font-size:12px;padding:7px}
+.extension-host .uiLocaleControl span{display:none}
+.extension-host main{padding:12px 11px 24px}
+.extension-host .intro{margin-bottom:12px;gap:8px}
+.extension-host .intro h2{font-size:17px}
+.extension-host .intro p{font-size:12px}
+.extension-host .ordersPanel{padding:12px}
+.extension-host .ordersToolbar,.extension-host .ordersActions{gap:8px}
+.extension-host .orderFilters input{min-width:0;width:100%;flex-basis:100%}
+.extension-host .orderFilters select{min-width:0;max-width:100%}
+.extension-host .orderRow{flex-direction:column;align-items:stretch;gap:9px}
+.extension-host .orderRowActions{justify-content:flex-start;max-width:100%}
+.extension-host .orderList{max-height:none}
+.extension-host .grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px}
+.extension-host .lookGrid,.extension-host .notesGrid{grid-template-columns:1fr}
+.extension-host .skillLayout{grid-template-columns:1fr}
+.extension-host .skillList{flex-direction:row;overflow-x:auto}
+.extension-host .skillList button{min-width:175px}
+.extension-host .orderStats{gap:6px}
+.extension-host .orderStat{flex:1 1 120px;min-width:120px;padding:8px}
+.extension-host .orderStat strong{font-size:18px}
+.ordersCaptureControls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ordersCaptureControls[hidden]{display:none!important}
+
+/* Shared identity across the Go Web UI, extension panel, and Windows shortcut. */
+.brandIdentity{display:flex;align-items:center;gap:11px;min-width:0}
+.brandMark{width:43px;height:43px;flex:0 0 auto;border-radius:12px}
+.extension-host .brandMark{width:34px;height:34px;border-radius:9px}
+
+/* BlogCTL-inspired icon workspace. One design across full page and side panel. */
+[hidden]{display:none!important}
+.appHeader{padding:13px 26px;gap:12px;min-height:78px;position:relative;z-index:2;background:#f8fafb;border-bottom:1px solid #dfe8e5}
+.appHeader .brandIdentity{gap:12px;flex:1}
+.appHeader .brandIdentity h1{font-size:22px;letter-spacing:.1px;margin:0;color:#183f30}
+.brandHeading{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.brandSubtitle{font-size:11px;letter-spacing:2px;color:#6f8078;margin:4px 0 0;line-height:1.3}
+.bridgeIndicator{display:inline-flex;align-items:center;gap:6px;color:#267958;font-size:12px;font-weight:600;white-space:nowrap;letter-spacing:1px}
+.statusDot{display:block;width:8px;height:8px;background:#28ae68;border-radius:100%}
+.appHeader .headerTools{margin-left:auto;display:flex;gap:8px;align-items:center}
+.headerIconAction{display:inline-flex;justify-content:center;align-items:center;background:#fff;border:1px solid #dce6e5;border-radius:9px;width:39px;height:39px;padding:0;flex:0 0 39px;color:#556f64;text-decoration:none}
+.headerIconAction:hover{background:#edf4f0;color:#345548}
+.appShell{display:grid;grid-template-columns:176px minmax(0,1fr);min-height:calc(100vh - 78px);align-items:start;background:#f8fafb}
+.appNav{display:flex;position:sticky;top:0;align-self:stretch;min-height:calc(100vh - 78px);padding:22px 12px;flex-direction:column;gap:6px;background:#f4f8f8;border-right:1px solid #dfe8e5}
+.navigationLabel{display:block;text-transform:uppercase;font-size:11px;color:#98aaa7;letter-spacing:2px;padding:3px 13px 9px;font-weight:600}
+.appNav .navButton{width:100%;border:0;background:transparent;display:flex;justify-content:flex-start;align-items:center;gap:13px;padding:11px 12px;border-radius:10px;color:#637987;font-size:13px;line-height:1;min-height:43px;text-align:left}
+.appNav .navButton:hover{background:#e9f1ef;color:#345548}
+.appNav .navButton.active{background:#e5f1eb;color:#245b43;font-weight:600}
+.navIcon{display:flex;align-items:center;justify-content:center;width:22px;height:22px;flex:0 0 22px}
+.appNav .navButton.active .navIcon{color:#278a59}
+.navText{white-space:nowrap}
+.appNav .navSettings{margin-top:22px}
+.workspaceMain{padding:25px min(4vw,40px) 65px;min-width:0;width:100%;max-width:1500px;margin:auto}
+.workspaceMain .intro{margin-bottom:21px}
+.workspaceMain .intro h2{font-size:20px}
+.workspaceMain .ordersPanel{box-shadow:0 2px 12px #18362b04}
+.workspaceMain .ordersToolbar h3{font-size:17px}
+.workspaceMain .ordersActions{align-items:center}
+.workspaceMain .ordersActions .primary{white-space:nowrap}
+.workspaceMain .ordersActions input[type=file]{width:min(230px,100%)}
+.workspaceMain .skillLayout{min-width:0}
+.uiLocaleControl{color:#526b61}
+.uiLocaleControl select{font-size:12px;color:#355649}
+.workspaceMain .intro #newLook{align-items:center;gap:7px}
+.workspaceMain .intro #newLook svg{width:16px;height:16px}
+/* Narrow Edge Side Panel: BlogCTL-style icon rail next to the full workspace. */
+.extension-host body{min-width:320px;background:#f8fafb}
+.extension-host .appHeader{padding:10px 14px;min-height:67px;gap:7px;flex-wrap:nowrap}
+.extension-host .appHeader .brandIdentity{gap:8px;min-width:0;flex:1}
+.extension-host .brandMark{width:35px;height:35px;flex:0 0 35px}
+.extension-host .appHeader .brandIdentity h1{font-size:18px}
+.extension-host .brandHeading{gap:5px;flex-wrap:wrap}
+.extension-host .brandSubtitle{letter-spacing:1px;font-size:9px}
+.extension-host .bridgeIndicator{font-size:10px;letter-spacing:0}
+.extension-host .appHeader .headerTools{margin-left:auto;gap:4px}
+.extension-host .headerIconAction{width:31px;height:32px;flex-basis:31px}
+.extension-host .headerIconAction svg{width:16px;height:16px}
+.extension-host .appShell{grid-template-columns:60px minmax(0,1fr);min-height:calc(100vh - 67px)}
+.extension-host .appNav{order:initial;display:flex;flex-direction:column;gap:9px;position:sticky;top:0;min-height:calc(100vh - 67px);padding:16px 6px;width:60px;border-right:1px solid #e0e8e8;white-space:normal;overflow:visible;flex-basis:auto}
+.extension-host .appNav .navigationLabel{display:none}
+.extension-host .appNav .navButton{width:46px;height:46px;min-height:46px;padding:10px;justify-content:center;flex:0 0 auto}
+.extension-host .appNav .navIcon{width:24px;height:24px}
+.extension-host .appNav .navButton svg{width:21px;height:21px}
+.extension-host .appNav .navText{display:none}
+.extension-host .appNav .navSettings{margin-top:26px}
+.extension-host .workspaceMain{padding:14px 10px 38px;min-width:0;width:auto;max-width:none;margin:0}
+.extension-host .workspaceMain .intro h2{font-size:15px}
+.extension-host .workspaceMain .intro p{font-size:11px}
+.extension-host .workspaceMain .ordersPanel{padding:12px}
+.extension-host .uiLocaleControl{padding:0}
+.extension-host .uiLocaleControl select{font-size:11px;min-width:64px;max-width:79px;padding:5px 6px}
+.extension-host .orderRowActions select{min-width:0;max-width:150px}
+.extension-host .orderRowMeta{gap:4px}
+.extension-host .orderInfo h4{font-size:12px}
+.extension-host .cardBody{padding:10px}
+.extension-host .cardTitle{font-size:12px}
+.extension-host .grid{grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:8px}
+@media (max-width:800px){
+ .appHeader{padding:12px 14px}
+ .appShell{grid-template-columns:65px minmax(0,1fr)}
+ .appNav{width:65px;padding:13px 7px;align-items:center;gap:9px;min-height:calc(100vh - 70px)}
+ .appNav .navButton{width:45px;min-height:45px;padding:10px;justify-content:center}
+ .appNav .navText,.navigationLabel{display:none}
+ .workspaceMain{padding:18px 12px 50px}
+ .appHeader .headerTools{gap:5px}
+ .headerIconAction{width:33px;height:34px;flex-basis:33px}
+ .appHeader .brandIdentity h1{font-size:18px}
+ .brandSubtitle{font-size:10px}
+}
+@media(max-width:440px){.bridgeIndicator{font-size:10px}.uiLocaleControl select{min-width:64px;width:72px}.appHeader .brandIdentity{gap:6px}.brandSubtitle{letter-spacing:0}}
+
+/* Order library: direct, background-only sync from shopping websites. */
+.workspaceMain .ordersPanel{padding:24px;background:#fff;border-color:#e0e7e0}
+.ordersToolbar{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:19px;flex-wrap:wrap}
+.ordersSectionHeading{min-width:0;flex:1 1 250px}
+.ordersSectionHeading h3{font-size:17px;margin:0 0 6px;color:#273c30}
+.ordersSectionHeading p{margin:0;line-height:1.6;font-size:12px}
+.ordersHeaderActions{flex:0 0 auto;display:flex;align-items:center;gap:8px}
+.ordersHeaderActions button{display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;padding:9px 14px}
+.ordersHeaderActions svg{width:16px;height:16px}
+ .ordersSyncPanel{background:#f8faf8;border:1px solid #dce6de;border-radius:11px;padding:18px;margin:0 0 19px}
+.ordersSyncPanel[hidden]{display:none!important}
+.ordersSyncHeading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px}
+.ordersSyncHeading h4{font-size:15px;color:#294333;margin:0 0 5px}
+.ordersSyncHeading p{margin:0;font-size:12px;line-height:1.6}
+#ordersSyncClose{padding:5px 10px;font-size:14px;line-height:1.5}
+.ordersSyncSources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ordersSyncSource{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;background:#fff;border:1px solid #e2e9e2;border-radius:10px;padding:12px 14px}
+.ordersSyncSourceInfo{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ordersSyncSourceInfo strong{font-size:14px;color:#324936}
+.ordersSyncSourceInfo span{font-size:12px;line-height:1.4}
+.ordersSyncSource button{flex:0 0 auto;white-space:nowrap;font-size:12px;padding:9px 12px}
+.ordersSyncHint{font-size:12px;margin:13px 0 0;line-height:1.7}
+.ordersSyncFooter{display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap;margin:10px 0 0}
+.ordersSyncFooter .ordersSyncStatus{margin:0;min-width:0;flex:1 1 200px;font-size:12px;line-height:1.6}
+.ordersSyncFooter button{font-size:12px;padding:7px 11px}
+.workspaceMain .orderStats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 20px}
+.workspaceMain .orderStat{min-width:0;padding:14px 16px;gap:6px;border-color:#e0e8e2;background:#f7faf7}
+.workspaceMain .orderStat strong{font-size:25px;line-height:1.1;font-variant-numeric:tabular-nums;color:#2e4435}
+.workspaceMain .orderStat .meta{font-size:12px;white-space:normal;line-height:1.4}
+.workspaceMain .orderFilters{display:grid;grid-template-columns:minmax(190px,1fr) repeat(3,minmax(130px,max-content));gap:10px;align-items:center;margin:0;padding:0 0 15px;border-bottom:1px solid #e5e9e4}
+.workspaceMain .orderFilters input{width:100%;min-width:0}
+.workspaceMain .orderFilters select{width:100%;min-width:0;max-width:100%;padding:10px}
+.ordersListStatus{margin:11px 0 5px;min-height:16px;font-size:12px;color:#7b867d}
+.workspaceMain .orderList{max-height:none;overflow:visible}
+.workspaceMain .orderRow{padding:17px 4px;gap:16px}
+.workspaceMain .orderRowActions{gap:7px;max-width:440px}
+.workspaceMain .orderRowActions select{max-width:150px}
+.workspaceMain .orderRowActions button{white-space:nowrap;padding:8px 11px}
+.workspaceMain .orderRowActions a{white-space:nowrap}
+.workspaceMain .ordersCaptureControls{background:#eef5ee;border-radius:9px;padding:10px 12px;margin:0 0 18px;gap:8px}
+.ordersCaptureLabel{font-size:12px;font-weight:600;color:#355b43}
+@media(max-width:1100px){
+ .workspaceMain .orderFilters{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .workspaceMain #ordersSearch{grid-column:1/-1}
+}
+@media(max-width:760px){
+ .workspaceMain .ordersPanel{padding:16px}
+ .workspaceMain .orderStats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .workspaceMain .orderStat{padding:12px}
+ .workspaceMain .orderStat strong{font-size:21px}
+ .ordersSyncSources{grid-template-columns:minmax(0,1fr)}
+ .workspaceMain .orderFilters{grid-template-columns:minmax(0,1fr)}
+ .workspaceMain #ordersSearch{grid-column:initial}
+ .ordersHeaderActions{align-self:start}
+}
+.extension-host .workspaceMain .ordersPanel{padding:13px}
+.extension-host .workspaceMain .ordersToolbar{gap:10px;margin-bottom:14px}
+.extension-host .ordersSectionHeading h3{font-size:15px}
+.extension-host .ordersHeaderActions button{padding:8px 11px;font-size:12px}
+.extension-host .ordersSyncPanel{padding:13px 11px}
+.extension-host .ordersSyncSources{grid-template-columns:minmax(0,1fr)}
+.extension-host .ordersSyncSource{padding:10px 9px}
+.extension-host .ordersSyncSource button{padding:7px 9px}
+.extension-host .workspaceMain .orderStats{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-bottom:14px}
+.extension-host .workspaceMain .orderStat{min-width:0;padding:10px}
+.extension-host .workspaceMain .orderStat strong{font-size:20px}
+.extension-host .workspaceMain .orderFilters{grid-template-columns:minmax(0,1fr);gap:7px}
+.extension-host .workspaceMain #ordersSearch{grid-column:1}
+.extension-host .workspaceMain .orderRow{padding:12px 0;gap:10px}
+.extension-host .workspaceMain .orderRowActions select{max-width:100%;width:100%}
+.extension-host .workspaceMain .orderRowActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-width:none;align-items:stretch}
+.extension-host .workspaceMain .orderRowActions a{align-self:center}
+
+/* Orders -> wardrobe: secondary organization + local-only photo archival. */
+.ordersCatalogStatus{font-size:12px;color:#64766c;line-height:1.6;margin:0 0 12px}
+.ordersHeaderActions{flex-wrap:wrap;justify-content:flex-end;max-width:100%}
+.ordersHeaderActions button:not(.primary){border-color:#dce6df;background:#fff;color:#355647;font-size:12px}
+.ordersHeaderActions button:disabled{opacity:.55;cursor:progress}
+.ordersHeaderActions button:not(.primary):hover{background:#f0f6f1}
+.workspaceMain .orderRow{justify-content:flex-start;gap:14px}
+.orderThumbnail{width:82px;height:94px;flex:0 0 82px;border-radius:8px;overflow:hidden;background:#f2f6f2;border:1px solid #e5eae4;display:flex;align-items:center;justify-content:center}
+.orderThumbnail img{width:100%;height:100%;object-fit:contain;display:block}
+.orderMissingImage{color:#8b9790;text-align:center;font-size:11px;padding:9px;line-height:1.6}
+.workspaceMain .orderRow .orderInfo{flex:1 1 auto;min-width:180px}
+.workspaceMain .orderRow .orderRowActions{flex:0 1 auto}
+@media(max-width:950px){
+ .ordersHeaderActions{justify-content:flex-start}
+ .workspaceMain .orderRow{flex-wrap:wrap}
+ .workspaceMain .orderRow .orderInfo{flex:1 1 calc(100% - 110px)}
+ .workspaceMain .orderRow .orderRowActions{flex:1 1 100%}
+}
+.extension-host .orderThumbnail{width:65px;height:74px;flex-basis:65px}
+.extension-host .workspaceMain .orderRow{display:flex;flex-direction:row;align-items:flex-start;flex-wrap:wrap;gap:8px}
+.extension-host .workspaceMain .orderRow .orderInfo{flex:1 1 calc(100% - 75px);min-width:105px}
+.extension-host .workspaceMain .orderRow .orderRowActions{flex:1 1 100%;width:100%}
+.extension-host .ordersHeaderActions{justify-content:flex-start;gap:5px}
+.extension-host .ordersHeaderActions button:not(.primary){font-size:11px;padding:8px 9px}
+
+/* Inventory management belongs to Wardrobe, not the order-sync page. */
+.wardrobeCatalogTools{display:block;border:1px solid #dfe9e1;background:#fbfcfb;border-radius:12px;padding:16px 18px;margin:0 0 18px}
+.wardrobeCatalogTools[hidden]{display:none!important}
+.wardrobeCatalogHeading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
+.wardrobeCatalogHeading h3{margin:0 0 4px;font-size:16px;color:#2d493b}
+.wardrobeCatalogHeading p{margin:0;color:#78877e;line-height:1.5;font-size:12px}
+.wardrobeCatalogActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wardrobeCatalogActions button{font-size:12px;white-space:nowrap;padding:10px 14px}
+.wardrobeCatalogActions button:disabled{opacity:.55;cursor:progress}
+.wardrobeCatalogTools .ordersCatalogStatus{min-height:18px;line-height:1.7;margin:10px 0 0}
+@media(max-width:750px){.wardrobeCatalogTools{padding:13px 12px}.wardrobeCatalogActions{width:100%}.wardrobeCatalogActions button{flex:1 1 auto}}
+.extension-host .wardrobeCatalogTools{padding:12px;margin-bottom:14px}
+.extension-host .wardrobeCatalogActions{width:100%}
+.extension-host .wardrobeCatalogActions button{flex:1 1 100%;padding:9px}

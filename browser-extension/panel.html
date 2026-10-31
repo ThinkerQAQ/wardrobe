@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>Wardrobe</title>
+ <link rel="icon" href="icons/icon32.png" type="image/png">
+ <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+ <iframe id="wardrobeFrame" title="Wardrobe · 我的衣橱" referrerpolicy="no-referrer" src="http://127.0.0.1:17936/?sidepanel=1"></iframe>
+ <section id="connectionError" hidden>
+  <img src="icons/icon48.png" width="48" height="48" alt="">
+  <h2>无法连接本地 Wardrobe</h2>
+  <p>请先启动本地 Wardrobe，然后刷新侧边栏。你无需输入配对码，正式数据仍保存在本机 SQLite。</p>
+  <div class="actions"><button id="retry">重试连接</button><button id="openWeb">打开本地网页</button></div>
+ </section>
+ <script src="panel.js"></script>
+</body>
+</html>

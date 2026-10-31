@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wardrobe · 搭配效果卡</title><link rel="stylesheet" href="/lookbook.css">
+<script defer src="/lookbook.js"></script>
+</head>
+<body>
+<header><div><small>WARDROBE · LOOKBOOK</small><h1>穿搭效果卡 <span>lookbook_card_v1</span></h1><p>人物照片由 AI 或真人原图提供；Go 服务使用本地 SQLite 商品与发型生成固定版式（浏览器文件仅传至本机）。</p></div><a href="/">返回衣橱</a></header>
+<main>
+<section class="controls">
+  <h2>选择本地衣橱数据</h2>
+  <label>已有搭配<select id="look"><option value="">不使用已保存搭配（手动选择下方单品）</option></select></label>
+  <div class="grid">
+    <label>外套<select id="outer"></select></label>
+    <label>中层 / 衬衫<select id="mid"></select></label>
+    <label>裤装<select id="pants"></select></label>
+    <label>鞋子<select id="shoes"></select></label>
+    <label>发型参考<select id="hair"></select></label>
+    <label>左侧人物图<input type="file" id="portrait" accept="image/png,image/jpeg,image/webp"></label>
+  </div>
+  <p class="hint">未选择新图片时，可使用已保存搭配的归档照片进行排版测试。真正 AI 试穿必须先提供经过核验的人物图；这里不会自动生成或改变人脸。选中发型只是展示参考，不能将发型模特的脸替换为本人。</p>
+  <div class="actions"><button id="generate" class="primary" type="button">生成固定版式预览</button><button id="download" type="button" disabled>下载 PNG（1200 × 1800）</button></div>
+  <p id="status" role="status" aria-live="polite"></p>
+</section>
+<section class="preview">
+  <h2>预览</h2>
+  <canvas id="card" width="1200" height="1800" aria-label="左侧全身人物、右侧四款商品及发型信息的固定搭配卡"></canvas>
+  <p class="hint">商品编号、名称、颜色和尺码由 SQLite 经本地 API 返回，不交给图像模型绘制。模板版式可以稳定复现，但人物脸部是否真实、服装是否准确仍需要独立验收。</p>
+</section>
+</main>
+</body>
+</html>

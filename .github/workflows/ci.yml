@@ -1,0 +1,62 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - run: bash scripts/audit-public.sh
+      - run: go test ./...
+      - run: go vet ./...
+      - name: Go vulnerability scan (reachable code)
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+      - run: node --check web/app.js
+      - run: node --check web/lookbook.js
+      - run: node --check web/orders.js
+      - run: node --test web/tests/*.test.cjs
+      - run: node --check browser-extension/background.js
+      - run: node --check browser-extension/panel.js
+      - run: node --check web/runtime.js
+      - run: node --check web/locale.js
+      - run: node --check web/extension-controls.js
+      - run: node scripts/sync-browser-ui.mjs --check
+      - run: bash tests/install-extension.test.sh
+      - run: node --test browser-extension/tests/*.test.cjs
+      - run: GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o /tmp/wardrobe.exe .
+      - name: Linux installer test
+        run: |
+          bash -n scripts/setup.sh scripts/start-local.sh scripts/start-tunnel.sh
+          go build -o /tmp/wardrobe-linux .
+          d=$(mktemp -d)
+          bash scripts/setup.sh --no-tunnel --no-start --non-interactive --binary /tmp/wardrobe-linux --install-dir "$d"
+          echo preserved > "$d/Data/keep.txt"
+          bash scripts/setup.sh --no-tunnel --no-start --non-interactive --binary /tmp/wardrobe-linux --install-dir "$d"
+          test "$(cat "$d/Data/keep.txt")" = preserved
+          rm -rf "$d"
+
+  windows-installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - name: Verify Windows installer is idempotent and preserves Data
+        shell: powershell
+        run: |
+          go build -o "$env:RUNNER_TEMP\wardrobe.exe" .
+          $dir = Join-Path $env:RUNNER_TEMP 'WardrobeSetupTest'
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Setup-Wardrobe.ps1 -InstallDir $dir -WardrobeBinary "$env:RUNNER_TEMP\wardrobe.exe" -NoTunnel -NoStart -NoAutostart -NonInteractive
+          if ($LASTEXITCODE -ne 0) { throw 'Initial setup failed' }
+          Set-Content (Join-Path $dir 'Data\keep.txt') 'untouched'
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Setup-Wardrobe.ps1 -InstallDir $dir -WardrobeBinary "$env:RUNNER_TEMP\wardrobe.exe" -NoTunnel -NoStart -NoAutostart -NonInteractive
+          if ($LASTEXITCODE -ne 0) { throw 'Repeat setup failed' }
+          if ((Get-Content (Join-Path $dir 'Data\keep.txt')) -ne 'untouched') { throw 'Installer replaced user data' }

@@ -1,0 +1,63 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wardrobe · 我的衣橱</title><meta name="theme-color" content="#345548"><link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css"><script src="./runtime.js" defer></script><script src="./locale.js" defer></script><script src="./app.js" defer></script><script src="./orders.js" defer></script><script src="./extension-controls.js" defer></script></head><body>
+<header class="appHeader">
+ <div class="brandIdentity"><img class="brandMark" src="./favicon.svg" width="43" height="43" alt=""><div><div class="brandHeading"><h1>Wardrobe</h1><span class="bridgeIndicator" id="bridgeIndicator"><span class="statusDot" aria-hidden="true"></span>本地已连接</span></div><p class="brandSubtitle">个人衣橱 · 穿搭管理工作台</p></div></div>
+ <div class="headerTools">
+  <label class="uiLocaleControl" for="wardrobeUiLocale"><span>语言</span><select id="wardrobeUiLocale" aria-label="界面语言"><option value="auto">自动</option><option value="zh-CN">中文</option><option value="en">English</option></select></label>
+  <button id="extensionOpenWorkspace" class="headerIconAction" title="在新标签页打开 Wardrobe" aria-label="在新标签页打开 Wardrobe" hidden><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="14" height="15" rx="2"/><path d="M10 3h11v11M21 3 11 13"/></svg></button>
+  <button id="refreshWorkspace" class="headerIconAction" title="刷新工作台" aria-label="刷新工作台"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.7-4.3L3 9m0-5v5h5M4 13a8 8 0 0 0 14.7 4.3L21 15m0 5v-5h-5"/></svg></button>
+  <a id="exportBackup" class="headerIconAction" href="/api/export" download title="导出备份" aria-label="导出备份"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 18v3h16v-3"/></svg></a>
+ </div>
+</header>
+<div class="appShell"><nav class="appNav" aria-label="衣橱功能导航">
+ <span class="navigationLabel">工作台</span>
+ <button id="ordersTab" class="navButton active" title="订单库" aria-label="订单库"><span class="navIcon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span class="navText">订单库</span></button>
+ <button id="wardrobeTab" class="navButton" title="衣橱" aria-label="衣橱"><span class="navIcon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v-1a3 3 0 1 1 3 3c0 1.4-2 2.1-3 3l-8.5 6.3a1.5 1.5 0 0 0 .9 2.7h15.2a1.5 1.5 0 0 0 .9-2.7L12 12"/></svg></span><span class="navText">衣橱</span></button>
+ <button id="hairTab" class="navButton" title="发型" aria-label="发型"><span class="navIcon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="11" r="7"/><path d="M5 11c1-5 5-6 7-6 4 0 6 3 7 6M9 14h.01M15 14h.01M10 17c1.3 1 2.7 1 4 0M5 11 3 9M19 11l2-2"/></svg></span><span class="navText">发型</span></button>
+ <button id="bodyTab" class="navButton" title="身体数据" aria-label="身体数据"><span class="navIcon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4" r="2"/><path d="m8 8 4 1 4-1M12 9v7m0-7-5 3m5-3 5 3m-5 4-4 5m4-5 4 5"/></svg></span><span class="navText">身体数据</span></button>
+ <button id="looksTab" class="navButton" title="搭配" aria-label="搭配"><span class="navIcon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="11" height="13" rx="2"/><path d="M9 3h9a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H8M7 10h5M7 14h5"/></svg></span><span class="navText">搭配</span></button>
+ <button id="skillsTab" class="navButton navSettings" title="Skills" aria-label="Skills"><span class="navIcon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3m0 14v3M4.9 4.9l2.1 2.1m10 10 2.1 2.1M2 12h3m14 0h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></span><span class="navText">Skills</span></button>
+</nav><main class="workspaceMain"><section class="intro"><div><h2 id="title">订单库</h2><p id="summary">管理已导入的本地订单记录，筛选穿搭商品。</p></div><button id="newLook" class="primary" hidden><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg><span>新建搭配</span></button></section>
+<section id="wardrobeCatalogTools" class="wardrobeCatalogTools" hidden aria-label="衣橱单品整理与图片归档">
+ <div class="wardrobeCatalogHeading"><div><h3>衣橱整理</h3><p class="meta">从订单识别穿搭候选；整理单品与下载图片是两项独立操作。</p></div>
+ <div class="wardrobeCatalogActions"><button id="ordersOrganize" type="button" title="只整理穿搭候选，不下载图片">整理穿搭入衣橱</button><button id="ordersCacheImages" type="button" title="仅补齐已有衣橱单品的商品图片">补齐商品图</button></div></div>
+ <p id="ordersCatalogStatus" class="meta ordersCatalogStatus" role="status" aria-live="polite">「整理穿搭」只建立待确认单品；「补齐商品图」才会下载图片，下载失败不会覆盖现有照片。</p>
+</section>
+<section id="filters" hidden><input id="search" placeholder="搜索编号、名称、颜色、尺码…" aria-label="搜索衣橱"><select id="category" aria-label="分类"><option value="">全部分类</option></select><select id="ratingFilter" aria-label="星级"><option value="">全部评分</option><option value="5">五星</option><option value="4">四星及以上</option><option value="3">三星及以上</option></select><select id="sourceFilter" aria-label="评分来源"><option value="">全部评分来源</option><option value="user">仅本人新评分</option></select><select id="ownedFilter" aria-label="持有状态"><option value="">全部持有状态</option></select><select id="fitFilter" aria-label="合身状态"><option value="">全部合身状态</option></select></section>
+<div id="content" class="grid" hidden></div>
+<section id="ordersPanel" class="ordersPanel" hidden aria-label="京东淘宝统一订单">
+ <div class="ordersToolbar">
+  <div class="ordersSectionHeading"><h3>订单概览</h3><p class="meta">统一管理已导入的订单，本机去重并识别穿搭候选。</p></div>
+  <div class="ordersHeaderActions"><button id="ordersSyncToggle" type="button" hidden class="primary" aria-expanded="false" aria-controls="ordersSyncPanel"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.7-4.3L3 9m0-5v5h5M4 13a8 8 0 0 0 14.7 4.3L21 15m0 5v-5h-5"/></svg><span>同步订单</span></button></div>
+ </div>
+ <section id="ordersSyncPanel" class="ordersSyncPanel" hidden aria-label="从购物网站同步订单">
+  <div class="ordersSyncHeading"><div><h4>从购物网站同步</h4><p class="meta">使用 Edge 当前登录状态，在后台访问对应订单列表并同步至本机 SQLite；不读取 Cookie，不需要导出文件。</p></div><button id="ordersSyncClose" type="button" aria-label="关闭同步面板" title="关闭">✕</button></div>
+  <div class="ordersSyncSources">
+   <div class="ordersSyncSource"><div class="ordersSyncSourceInfo"><strong>京东</strong><span class="meta">订单中心 · 支持增量去重</span></div><button id="ordersSyncJD" type="button" class="primary">同步京东</button></div>
+   <div class="ordersSyncSource"><div class="ordersSyncSourceInfo"><strong>淘宝</strong><span class="meta">已买到的宝贝 · 支持增量去重</span></div><button id="ordersSyncTB" type="button" class="primary">同步淘宝</button></div>
+  </div>
+  <p class="ordersSyncHint meta">首次同步会在后台打开相应平台的订单列表；如果网站要求登录，可手动打开页面完成登录后重新同步。当前默认列表可同步，其他年份或分页需核对覆盖范围。</p>
+  <div class="ordersSyncFooter"><p id="ordersSyncStatus" class="ordersSyncStatus meta" role="status" aria-live="polite">未开始同步</p><button id="ordersSyncStop" type="button">停止同步</button></div>
+ </section>
+ <div id="ordersStats" class="orderStats" role="status" aria-live="polite"></div>
+ <div class="orderFilters"><input id="ordersSearch" placeholder="搜索商品、店铺、订单编号…"><select id="ordersPlatform"><option value="">全部平台</option><option value="淘宝">淘宝</option><option value="京东">京东</option></select><select id="ordersScope"><option value="wearable">仅穿搭相关</option><option value="all">全部订单商品</option><option value="unlinked">待入库穿搭商品</option></select><select id="ordersCategory"><option value="">全部穿搭分类</option></select></div>
+ <p id="ordersStatus" class="meta ordersListStatus" role="status"></p>
+ <div id="ordersList" class="orderList"></div>
+</section>
+<section id="skillsPanel" class="skillLayout" hidden aria-label="Skill 编辑器">
+ <aside class="skillSidebar"><h3>已安装的工作流</h3><p class="meta">内置模板与本地编辑版本</p><div id="skillList" class="skillList" role="navigation" aria-label="选择 Skill"></div></aside>
+ <div class="skillWorkspace">
+  <div class="skillTop"><div><h3 id="skillTitle">选择 Skill</h3><p id="skillMeta" class="meta"></p></div><div class="skillActions"><button id="skillReset">恢复默认</button><button class="primary" id="skillSave">保存修改</button></div></div>
+  <p class="skillHint">编辑完整 SKILL.md（包括开头的 name 和 description）。保存后立即写入本机 SQLite，ChatGPT 下次通过 MCP 读取时生效；不会修改 GitHub 上的模板，也不会自动重新安装 ChatGPT Skill。</p>
+  <div class="skillMode"><button id="skillEditMode" class="active" type="button">编辑</button><button id="skillViewMode" type="button">查看文本</button></div>
+  <label class="skillEditorLabel" for="skillContent">Skill Markdown 内容</label>
+  <textarea id="skillContent" spellcheck="false" aria-label="Skill Markdown 内容"></textarea>
+  <pre id="skillPreview" class="skillPreview" hidden></pre>
+  <p class="meta" id="skillStatus" role="status" aria-live="polite"></p>
+ </div>
+</section></main></div>
+<dialog id="detail"><div class="dialogTop"><h2>商品详情</h2><button data-close="detail" aria-label="关闭">✕</button></div><div id="detailBody"></div></dialog>
+<dialog id="editor"><div class="dialogTop"><h2 id="editorTitle">编辑搭配</h2><button data-close="editor" aria-label="关闭">✕</button></div><div id="editorBody"></div><div class="dialogActions"><span id="saveState"></span><div class="lookActions"><button id="deleteLook" class="danger" hidden>删除搭配</button><button id="saveLook" class="primary">保存搭配</button></div></div></dialog>
+<dialog id="picker"><div class="dialogTop"><h2 id="pickerTitle">选择单品</h2><button data-close="picker" aria-label="关闭">✕</button></div><input id="pickerSearch" placeholder="搜索编号、名称、颜色…"><select id="pickerCategory" aria-label="筛选类别"></select><button id="clearSlot">清空此部位</button><div id="pickerGrid" class="grid"></div></dialog>
+<dialog id="lightbox"><button data-close="lightbox" aria-label="关闭">关闭</button><img id="largeImage" alt="放大图片"></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+</body></html>
