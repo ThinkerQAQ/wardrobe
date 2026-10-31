@@ -30,3 +30,5 @@ go build .
 ```
 
 订单标准数据接口及可选适配器说明见 [docs/ORDER_SOURCES.md](docs/ORDER_SOURCES.md)。
+
+发行包附带第三方完整许可及版本清单，详见[第三方声明](THIRD_PARTY_NOTICES.md)。

@@ -16,6 +16,13 @@ jobs:
       - run: bash scripts/audit-public.sh
       - run: go test ./...
       - run: go vet ./...
+      - name: Verify distributable dependency licenses
+        run: |
+          mkdir -p .build/tools
+          GOTOOLCHAIN="$(go env GOVERSION)" GOBIN="$PWD/.build/tools" go install github.com/google/go-licenses/v2@v2.0.1
+          CGO_ENABLED=0 .build/tools/go-licenses save . --ignore=wardrobe --save_path="$PWD/.build/licenses"
+          test -s .build/licenses/modernc.org/sqlite/LICENSE
+
       - name: Go vulnerability scan (reachable code)
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
       - run: node --check web/app.js

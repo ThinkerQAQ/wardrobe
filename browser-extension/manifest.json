@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Wardrobe",
   "description": "Local Wardrobe workspace, inventory and outfit management.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "permissions": [
     "storage",
     "sidePanel"

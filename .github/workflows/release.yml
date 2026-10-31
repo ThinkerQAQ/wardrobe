@@ -25,6 +25,10 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
+      - name: Install pinned license collector
+        run: |
+          mkdir -p .build/tools
+          GOTOOLCHAIN="$(go env GOVERSION)" GOBIN="$PWD/.build/tools" go install github.com/google/go-licenses/v2@v2.0.1
       - name: Build and package
         shell: bash
         run: |
@@ -32,7 +36,11 @@ jobs:
           bash scripts/audit-public.sh
           mkdir -p staging
           GOOS="${{ matrix.goos }}" GOARCH="${{ matrix.goarch }}" CGO_ENABLED=0 go build -trimpath -o "staging/wardrobe${{ matrix.goos == 'windows' && '.exe' || '' }}" .
-          cp config.example.toml LICENSE README.md README_ZH.md SECURITY.md SECURITY_ZH.md CONTRIBUTING.md CONTRIBUTING_ZH.md staging/
+          GOOS="${{ matrix.goos }}" GOARCH="${{ matrix.goarch }}" CGO_ENABLED=0 .build/tools/go-licenses save . --ignore=wardrobe --save_path="$PWD/staging/THIRD_PARTY_LICENSES"
+          GOOS="${{ matrix.goos }}" GOARCH="${{ matrix.goarch }}" CGO_ENABLED=0 .build/tools/go-licenses report . --ignore=wardrobe > staging/THIRD_PARTY_LICENSES/DEPENDENCIES.csv
+          cp "$(go env GOROOT)/LICENSE" staging/THIRD_PARTY_LICENSES/Go-LICENSE
+          go version > staging/THIRD_PARTY_LICENSES/BUILD.txt
+          cp config.example.toml LICENSE README.md README_ZH.md SECURITY.md SECURITY_ZH.md CONTRIBUTING.md CONTRIBUTING_ZH.md THIRD_PARTY_NOTICES.md staging/
           bash scripts/audit-public.sh
           mkdir -p staging/docs staging/scripts
           cp docs/*.md staging/docs/
