@@ -4,7 +4,7 @@
 
 A local-first wardrobe and outfit assistant built with Go, SQLite, a Web UI and MCP. Own your inventory, outfit combinations, hairstyles and body measurements while keeping private records local.
 
-- Single-user localhost Web UI and Edge/Chrome side panel.
+- Single-user localhost Web UI and Edge/Chrome side panel. The extension bundles an offline UI shell, so navigation and connection status remain available even when Core is not running. SQLite data and writes require Core; reconnect is automatic.
 - SQLite clothing inventory, outfits, product images, hairstyle references, skill configuration.
 - MCP tools for controlled local queries, writes and AI-assisted outfit planning.
 - Generic order-item model with local CSV/XLSX/JSON imports, deduplication and wardrobe classification.

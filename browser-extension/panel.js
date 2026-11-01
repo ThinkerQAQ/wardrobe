@@ -1,18 +1,27 @@
 'use strict';
 const hostOrigin='http://127.0.0.1:17936';
-const frame=document.getElementById('wardrobeFrame');
-const error=document.getElementById('connectionError');
-let connected=false,pending=null;
-const showError=()=>{if(!connected)error.hidden=false};
+const offlineFrame=document.getElementById('offlineFrame');
+const onlineFrame=document.getElementById('onlineFrame');
+let connected=false;
+function showOnline(){
+  connected=true;
+  onlineFrame.hidden=false;
+  offlineFrame.hidden=true;
+}
 function retry(){
-  connected=false;error.hidden=true;
-  frame.src=hostOrigin+'/?sidepanel=1&v='+Date.now();
-  clearTimeout(pending);pending=setTimeout(showError,6000);
+  if(connected)return;
+  // A failed network load never blocks the extension-packaged UI.
+  onlineFrame.src=hostOrigin+'/?sidepanel=1&v='+Date.now();
 }
 window.addEventListener('message',event=>{
-  if(event.source!==frame.contentWindow || event.origin!==hostOrigin || event.data?.app!=='wardrobe-ui')return;
-  if(event.data.type==='ready'){connected=true;clearTimeout(pending);error.hidden=true}
+  if(event.source===offlineFrame.contentWindow && event.origin===location.origin &&
+     event.data?.app==='wardrobe-panel' && event.data.type==='retry'){
+    retry();
+    return;
+  }
+  if(event.source!==onlineFrame.contentWindow || event.origin!==hostOrigin ||
+     event.data?.app!=='wardrobe-ui')return;
+  if(event.data.type==='ready')showOnline();
 });
-document.getElementById('retry').onclick=retry;
-document.getElementById('openWeb').onclick=()=>chrome.tabs.create({url:hostOrigin+'/'});
-pending=setTimeout(showError,6500);
+// Recheck for a newly started local server without replacing the offline UI.
+setInterval(()=>{if(!connected)retry()},12000);

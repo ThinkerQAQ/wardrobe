@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Wardrobe",
   "description": "Local Wardrobe workspace, inventory and outfit management.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "permissions": [
     "storage",
     "sidePanel"
@@ -33,6 +33,6 @@
     "128": "icons/icon128.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none'; frame-src http://127.0.0.1:17936; connect-src 'self'; img-src 'self';"
+    "extension_pages": "script-src 'self'; object-src 'none'; frame-src 'self' http://127.0.0.1:17936; connect-src 'self'; img-src 'self';"
   }
 }

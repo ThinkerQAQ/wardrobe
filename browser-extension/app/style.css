@@ -306,3 +306,12 @@ button.danger:hover{background:#fff2ef;border-color:#b76554}
 .extension-host .wardrobeCatalogTools{padding:12px;margin-bottom:14px}
 .extension-host .wardrobeCatalogActions{width:100%}
 .extension-host .wardrobeCatalogActions button{flex:1 1 100%;padding:9px}
+
+/* Offline side panel: packaged shell remains usable without the local service. */
+.offlineNotice{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:15px 18px;margin:0 4vw 14px;background:#eef3ee;border:1px solid #c9d7cb;border-radius:12px}
+.offlineNotice strong{font-size:14px;color:#2d4937}
+.offlineNotice p{margin:6px 0 0;font-size:12px;line-height:1.6}
+.offlineNotice button{flex-shrink:0;background:#fff}
+.bridgeIndicator.offline .statusDot{background:#a8aaa6}
+.extension-host .offlineNotice{margin:0 12px 14px;flex-direction:column;align-items:stretch}
+.extension-host .offlineNotice button{align-self:flex-start}
