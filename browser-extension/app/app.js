@@ -180,6 +180,18 @@ function showOffline(){
  $('#skillStatus').textContent='服务未启动，Skill 修改暂不可用。';
 }
 $('#retryOffline').onclick=()=>window.parent.postMessage({app:'wardrobe-panel',type:'retry'},location.origin);
+$('#startLocal').onclick=()=>{
+ const button=$('#startLocal');button.disabled=true;
+ button.textContent='正在启动…';
+ window.parent.postMessage({app:'wardrobe-panel',type:'start'},location.origin);
+};
+window.addEventListener('message',event=>{
+ if(!offlineShell||event.source!==window.parent||event.origin!==location.origin
+    ||event.data?.app!=='wardrobe-launch'||event.data.type!=='result')return;
+ const button=$('#startLocal');button.disabled=false;button.textContent='启动本地服务';
+ if(event.data.ok)$('#summary').textContent='本地服务已启动，正在连接工作台…';
+ else $('#summary').textContent='启动失败：'+String(event.data.error||'请检查 Native Host 安装').slice(0,180);
+});
 function changeTab(to){if(tab==='skills' && to!=='skills' && skillDirty() && !window.confirm('当前 Skill 尚未保存，确定离开？'))return;tab=to;offlineShell?showOffline():render()}
 $('#refreshWorkspace').onclick=()=>offlineShell?window.parent.postMessage({app:'wardrobe-panel',type:'retry'},location.origin):location.reload();$('#newLook').onclick=()=>editLook();$('#wardrobeTab').onclick=()=>changeTab('wardrobe');$('#ordersTab').onclick=async()=>{changeTab('orders');if(tab==='orders'&&!offlineShell)await window.orderUI?.load()};$('#looksTab').onclick=()=>changeTab('looks');$('#hairTab').onclick=()=>changeTab('hair');$('#bodyTab').onclick=()=>changeTab('body');$('#skillsTab').onclick=async()=>{changeTab('skills');if(tab==='skills'&&!offlineShell)await loadSkills()};
 function skillDirty(){return currentSkill && $('#skillContent').value!==currentSkill.content}

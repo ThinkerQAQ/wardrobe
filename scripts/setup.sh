@@ -4,13 +4,13 @@ umask 077
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEST="$HOME/.local/share/wardrobe"
 BINARY=""
-NO_TUNNEL=0; NO_START=0; NO_AUTOSTART=0; NONINTERACTIVE=0
+NO_TUNNEL=0; NO_START=0; NO_AUTOSTART=0; NONINTERACTIVE=0; EXTENSION_ID=""
 while (($#)); do
  case "$1" in
- --install-dir) DEST="$2";shift 2;; --binary) BINARY="$2";shift 2;;
+ --install-dir) DEST="$2";shift 2;; --extension-id) EXTENSION_ID="$2";shift 2;; --binary) BINARY="$2";shift 2;;
  --no-tunnel) NO_TUNNEL=1;shift;; --no-start) NO_START=1;shift;;
  --no-autostart) NO_AUTOSTART=1;shift;; --non-interactive) NONINTERACTIVE=1;shift;;
- --help|-h) echo 'Usage: bash scripts/setup.sh [--install-dir DIR] [--binary FILE] [--no-tunnel] [--no-start] [--no-autostart] [--non-interactive]';exit 0;;
+ --help|-h) echo 'Usage: bash scripts/setup.sh [--install-dir DIR] [--extension-id ID] [--binary FILE] [--no-tunnel] [--no-start] [--no-autostart] [--non-interactive]';exit 0;;
  *) echo "Unknown option: $1" >&2;exit 2;; esac
 done
 say(){ echo "[Wardrobe] $*"; }
@@ -81,6 +81,13 @@ if [[ -f "$SRC/browser-extension/app/index.html" ]];then
   rm -f "$DEST/browser-extension/popup.html" "$DEST/browser-extension/popup.js"
   say 'Wardrobe side panel files installed. Load the unpacked extension folder in Edge/Chrome once.'
 else say 'Optional browser extension files are not present in this custom source directory.';fi
+if [[ -n "$EXTENSION_ID" ]];then
+ [[ "$EXTENSION_ID" =~ ^[a-p]{32}$ ]] || fail 'Extension ID must contain 32 a-p characters'
+ "$DEST/wardrobe" --register-native-host "$EXTENSION_ID" || fail 'Native Messaging registration failed'
+ say "Native Messaging: registered for $EXTENSION_ID"
+else
+ say 'To enable browser auto-start, rerun setup with --extension-id from browser extension details.'
+fi
 say 'Installed locally. Existing SQLite and photos preserved.'
 autostart(){
  local name="$1" script="$2" unit

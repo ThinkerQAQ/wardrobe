@@ -59,3 +59,13 @@ Linux/macOS：
 - Windows SmartScreen 或 macOS Gatekeeper：校验 Release 的来源与 SHA256，系统保护提示需用户自行判断，安装器不会关闭系统安全功能。
 
 官方依据：[Secure MCP Tunnel](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels) 和 [tunnel-client](https://github.com/openai/tunnel-client)。
+
+
+### 扩展自动启动与手动启动本地服务
+
+Wardrobe 侧边栏即使未启动 Core 也可显示完整 UI。要让**打开侧边栏时自动拉起服务**以及「启动本地服务」按钮生效，需要为自己的浏览器扩展注册一次 Native Messaging Host。从 Edge/Chrome 扩展详情页复制 32 位小写 `a`–`p` 组成的扩展 ID。
+
+- Windows：在安装目录执行 `wardrobe.exe --register-native-host 你的扩展ID`；或者运行 `Setup-Wardrobe.cmd -ExtensionId 你的扩展ID -NoTunnel -NoStart`。
+- Linux/macOS：在安装目录执行 `./wardrobe --register-native-host 你的扩展ID`，也可运行 `scripts/setup.sh --extension-id 你的扩展ID`。
+
+安装会注册 `com.thinkerqaq.wardrobe`，仅允许已绑定扩展启动已安装的 Wardrobe 程序，不会授权任意命令执行，不会上传 SQLite 数据。未注册时，仍可正常显示离线 UI，并可从系统手动启动。搬动程序目录或更换扩展 ID 后需要重新注册。
