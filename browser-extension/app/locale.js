@@ -99,8 +99,13 @@
  }
  function apply(rootNode){if(!rootNode)return;if(rootNode.nodeType===3){translateNode(rootNode);return}if(rootNode.nodeType!==1||skip(rootNode))return;translateAttrs(rootNode);const it=document.createTreeWalker(rootNode,NodeFilter.SHOW_TEXT);while(it.nextNode())translateNode(it.currentNode);for(const el of rootNode.querySelectorAll('*'))translateAttrs(el)}
  function change(pref){preference=pref;effective=pref==='auto'?systemLocale():pref;document.documentElement.lang=effective;translating=true;apply(document.body);translating=false;const sel=document.getElementById('wardrobeUiLocale');if(sel)sel.value=preference}
- async function reload(){try{const r=await root.WardrobeTransport.request('/api/ui-locale');if(!r.ok)return;const d=await r.json();if(preferenceValues.has(d.uiLocale))change(d.uiLocale)}catch{/* not connected yet */}}
- async function setLocale(pref){if(!preferenceValues.has(pref))throw Error('Invalid locale');const prior=preference;change(pref);try{const r=await root.WardrobeTransport.request('/api/ui-locale',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({uiLocale:pref})});if(!r.ok)throw Error('Cannot save locale');}catch(e){change(prior);throw e}}
+ async function reload(){if(root.WardrobeTransport.host==='extension'){
+  try{const data=await chrome.storage.local.get('uiLocale');if(preferenceValues.has(data.uiLocale))change(data.uiLocale)}catch{}return;
+ }
+ try{const r=await root.WardrobeTransport.request('/api/ui-locale');if(!r.ok)return;const d=await r.json();if(preferenceValues.has(d.uiLocale))change(d.uiLocale)}catch{/* not connected yet */}}
+ async function setLocale(pref){if(!preferenceValues.has(pref))throw Error('Invalid locale');const prior=preference;change(pref);try{
+ if(root.WardrobeTransport.host==='extension'){await chrome.storage.local.set({uiLocale:pref});return}
+ const r=await root.WardrobeTransport.request('/api/ui-locale',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({uiLocale:pref})});if(!r.ok)throw Error('Cannot save locale');}catch(e){change(prior);throw e}}
  function init(){if(observer)return;const sel=document.getElementById('wardrobeUiLocale');if(!sel)return;sel.addEventListener('change',()=>setLocale(sel.value).catch(()=>{const status=document.getElementById('extensionConnectionStatus');if(status)status.textContent='无法保存界面语言 / Unable to save language'}));change('auto');observer=new MutationObserver(records=>{if(translating)return;translating=true;for(const m of records){if(m.type==='characterData')translateNode(m.target);else if(m.type==='attributes')translateAttrs(m.target);else for(const n of m.addedNodes)apply(n)}translating=false});observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:attrs});reload();}
  root.WardrobeI18n={get preference(){return preference},get locale(){return effective},translate:trans,setLocale,reload};
  document.addEventListener('DOMContentLoaded',init);

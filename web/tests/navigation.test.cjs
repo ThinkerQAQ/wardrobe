@@ -11,7 +11,7 @@ test('desktop and extension use ordered icon navigation',()=>{
 });
 test('orders is the default route with no manual pairing',()=>{
  assert.match(js,/tab='orders'/);assert.match(html,/id="ordersTab" class="navButton active"/);
- assert.match(js,/if\(tab==='orders'\)await window\.orderUI\?\.load\(\)/);
+ assert.match(js,/if\(tab==='orders'&&!offlineShell\)await window\.orderUI\?\.load\(\)/);
  assert.doesNotMatch(html,/id="extensionPairKey"|id="ordersPair"|连接本地应用/);
 });
 test('website sync is collapsed by default and no file-install tutorial exists',()=>{

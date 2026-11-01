@@ -17,6 +17,10 @@
  <button id="looksTab" class="navButton" title="搭配" aria-label="搭配"><span class="navIcon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="11" height="13" rx="2"/><path d="M9 3h9a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H8M7 10h5M7 14h5"/></svg></span><span class="navText">搭配</span></button>
  <button id="skillsTab" class="navButton navSettings" title="Skills" aria-label="Skills"><span class="navIcon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3m0 14v3M4.9 4.9l2.1 2.1m10 10 2.1 2.1M2 12h3m14 0h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></span><span class="navText">Skills</span></button>
 </nav><main class="workspaceMain"><section class="intro"><div><h2 id="title">订单库</h2><p id="summary">管理已导入的本地订单记录，筛选穿搭商品。</p></div><button id="newLook" class="primary" hidden><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg><span>新建搭配</span></button></section>
+<section id="offlineNotice" class="offlineNotice" role="status" aria-live="polite" hidden>
+ <div><strong>本地 Wardrobe 未连接</strong><p>界面可以正常浏览；订单、衣橱数据及保存操作需要本地服务。启动 Wardrobe 后会自动连接，无需输入配对码。</p></div>
+ <button id="retryOffline" type="button">重新连接</button>
+</section>
 <section id="wardrobeCatalogTools" class="wardrobeCatalogTools" hidden aria-label="衣橱单品整理与图片归档">
  <div class="wardrobeCatalogHeading"><div><h3>衣橱整理</h3><p class="meta">从订单识别穿搭候选；整理单品与下载图片是两项独立操作。</p></div>
  <div class="wardrobeCatalogActions"><button id="ordersOrganize" type="button" title="只整理穿搭候选，不下载图片">整理穿搭入衣橱</button><button id="ordersCacheImages" type="button" title="仅补齐已有衣橱单品的商品图片">补齐商品图</button></div></div>

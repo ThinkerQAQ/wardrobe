@@ -167,8 +167,21 @@ $('#saveLook').onclick=async()=>{const b=$('#saveLook');b.disabled=true;try{cons
 $('#deleteLook').onclick=()=>removeLook(draft,$('#deleteLook'));
 $('#clearSlot').onclick=()=>{draft.slots[picking]='';$('#picker').close();renderEditor()};
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$('#'+b.dataset.close).close());
-function changeTab(to){if(tab==='skills' && to!=='skills' && skillDirty() && !window.confirm('当前 Skill 尚未保存，确定离开？'))return;tab=to;render()}
-$('#refreshWorkspace').onclick=()=>location.reload();$('#newLook').onclick=()=>editLook();$('#wardrobeTab').onclick=()=>changeTab('wardrobe');$('#ordersTab').onclick=async()=>{changeTab('orders');if(tab==='orders')await window.orderUI?.load()};$('#looksTab').onclick=()=>changeTab('looks');$('#hairTab').onclick=()=>changeTab('hair');$('#bodyTab').onclick=()=>changeTab('body');$('#skillsTab').onclick=async()=>{changeTab('skills');if(tab==='skills')await loadSkills()};
+const offlineShell=WardrobeTransport.host==='extension';
+function showOffline(){
+ render();
+ $('#offlineNotice').hidden=false;
+ const badge=$('#bridgeIndicator');const dot=el('span','statusDot');dot.setAttribute('aria-hidden','true');badge.replaceChildren(dot,document.createTextNode('本地未连接'));badge.classList.add('offline');
+ $('#summary').textContent='本地服务离线 · 可浏览工作台，数据操作需启动 Wardrobe';
+ $('#newLook').hidden=true;
+ $('#exportBackup').hidden=true;
+ for(const id of ['ordersOrganize','ordersCacheImages','ordersSyncJD','ordersSyncTB','skillSave','skillReset'])$('#'+id).disabled=true;
+ $('#ordersStatus').textContent='服务未启动，订单数据暂不可用。';
+ $('#skillStatus').textContent='服务未启动，Skill 修改暂不可用。';
+}
+$('#retryOffline').onclick=()=>window.parent.postMessage({app:'wardrobe-panel',type:'retry'},location.origin);
+function changeTab(to){if(tab==='skills' && to!=='skills' && skillDirty() && !window.confirm('当前 Skill 尚未保存，确定离开？'))return;tab=to;offlineShell?showOffline():render()}
+$('#refreshWorkspace').onclick=()=>offlineShell?window.parent.postMessage({app:'wardrobe-panel',type:'retry'},location.origin):location.reload();$('#newLook').onclick=()=>editLook();$('#wardrobeTab').onclick=()=>changeTab('wardrobe');$('#ordersTab').onclick=async()=>{changeTab('orders');if(tab==='orders'&&!offlineShell)await window.orderUI?.load()};$('#looksTab').onclick=()=>changeTab('looks');$('#hairTab').onclick=()=>changeTab('hair');$('#bodyTab').onclick=()=>changeTab('body');$('#skillsTab').onclick=async()=>{changeTab('skills');if(tab==='skills'&&!offlineShell)await loadSkills()};
 function skillDirty(){return currentSkill && $('#skillContent').value!==currentSkill.content}
 function skillStatus(message){$('#skillStatus').textContent=message}
 function skillButtons(){const dirty=skillDirty();$('#skillSave').disabled=skillBusy||!currentSkill||!dirty;$('#skillReset').disabled=skillBusy||!currentSkill||!currentSkill.modified;}
@@ -213,5 +226,5 @@ $('#skillReset').onclick=async()=>{
 };
 async function refreshSkillList(){skillItems=await api('skills');renderSkillList();$('#skillMeta').textContent=currentSkill.name+' · '+(currentSkill.modified?'本地修改版本 v'+currentSkill.version:'内置默认版本')}
 let searchTimer;$('#search').oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(render,120)};for(const id of ['category','ratingFilter','sourceFilter','ownedFilter','fitFilter'])$('#'+id).onchange=render;$('#pickerSearch').oninput=renderPicker;$('#pickerCategory').onchange=renderPicker;
-async function loadWardrobe(){try{if(!await WardrobeTransport.check()){window.dispatchEvent(new Event('wardrobe:connection-required'));return}[products,looks,hairStyles,bodyProfile]=await Promise.all([api('products'),api('looks'),api('hairstyles'),api('body/BODY').catch(()=>null)]);hairByID=Object.fromEntries(hairStyles.map(h=>[h.id,h]));indexProducts();const cats=[['','全部分类'],...[...new Set(products.map(p=>p.category))].sort().map(c=>[c,c])];selectOptions('#category',cats);selectOptions('#ownedFilter',[['','全部持有状态'],...[...new Set(products.map(p=>p.owned).filter(Boolean))].map(v=>[v,v])]);selectOptions('#fitFilter',[['','全部合身状态'],...[...new Set(products.map(p=>p.fit).filter(Boolean))].map(v=>[v,v])]);render();if(tab==='orders')await window.orderUI?.load()}catch(e){$('#summary').textContent='加载失败：'+e.message}}
+async function loadWardrobe(){try{if(!await WardrobeTransport.check()){if(offlineShell)showOffline();else window.dispatchEvent(new Event('wardrobe:connection-required'));return}[products,looks,hairStyles,bodyProfile]=await Promise.all([api('products'),api('looks'),api('hairstyles'),api('body/BODY').catch(()=>null)]);hairByID=Object.fromEntries(hairStyles.map(h=>[h.id,h]));indexProducts();const cats=[['','全部分类'],...[...new Set(products.map(p=>p.category))].sort().map(c=>[c,c])];selectOptions('#category',cats);selectOptions('#ownedFilter',[['','全部持有状态'],...[...new Set(products.map(p=>p.owned).filter(Boolean))].map(v=>[v,v])]);selectOptions('#fitFilter',[['','全部合身状态'],...[...new Set(products.map(p=>p.fit).filter(Boolean))].map(v=>[v,v])]);render();if(tab==='orders'&&!offlineShell)await window.orderUI?.load()}catch(e){$('#summary').textContent='加载失败：'+e.message}}
 window.addEventListener('wardrobe:paired',loadWardrobe);loadWardrobe();

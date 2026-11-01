@@ -1,13 +1,15 @@
 'use strict';
-// Wardrobe always executes from its own loopback HTTP origin, even when framed
-// by the Chrome/Edge side panel. API, archived images and UI share a single
-// local Go server and SQLite store; no user pairing secret is necessary.
+// The extension-bundled UI stays available when the local Go process is down.
+// Connected data views still run in the loopback origin, preserving the existing
+// same-origin API and SQLite access rules without exposing a pairing secret.
 (function(root){
+ const extensionPage=root.location.protocol==='chrome-extension:';
  const embedded=root.self!==root.top;
  const base='http://127.0.0.1:17936';
  if(embedded)document.documentElement.classList.add('extension-host');
  async function request(path,init={}){
   if(typeof path!=='string'||!path.startsWith('/api/'))throw Error('Non-local API URL blocked');
+  if(extensionPage)throw Error('Local Wardrobe service is offline');
   return fetch(path,{...init,credentials:'same-origin'});
  }
  async function check(){try{const r=await request('/api/health');return r.ok}catch{return false}}
@@ -24,6 +26,6 @@
   a.href=obj;a.download='wardrobe-backup.json';document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(obj),45000);
  }
- root.WardrobeTransport=Object.freeze({host:embedded?'embedded':'web',request,check,media,exportBackup,base});
+ root.WardrobeTransport=Object.freeze({host:extensionPage?'extension':embedded?'embedded':'web',request,check,media,exportBackup,base});
  if(embedded)root.addEventListener('load',()=>root.parent.postMessage({app:'wardrobe-ui',type:'ready'},'*'));
 })(globalThis);
