@@ -21,7 +21,7 @@ test('the first visible side panel frame is packaged and usable without Core',()
  assert.match(runtime,/if\(extensionPage\)throw Error/);
 });
 test('side panel preserves the bundled UI until a validated local frame is ready',()=>{
- const offlineFrame={hidden:false,contentWindow:{}};
+ const offlineFrame={hidden:false,contentWindow:{postMessage:()=>{}},addEventListener:(_evt,fn)=>{offlineFrame.onLoad=fn}};
  const onlineFrame={hidden:true,contentWindow:{}};
  const listeners=new Map();
  const intervals=[];
@@ -29,11 +29,12 @@ test('side panel preserves the bundled UI until a validated local frame is ready
   document:{getElementById:id=>({offlineFrame,onlineFrame})[id]},
   location:{origin:'chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'},
   window:{addEventListener:(name,fn)=>listeners.set(name,fn)},
-  chrome:{runtime:{onMessage:{addListener:()=>{}}}},
+  chrome:{runtime:{sendNativeMessage:(_host,_message,callback)=>{callback({ok:true})},onMessage:{addListener:()=>{}}}},
   Date:{now:()=>12345},
   setInterval:fn=>intervals.push(fn)
  };
  vm.runInNewContext(fs.readFileSync(path.join(extension,'panel.js'),'utf8'),context);
+ offlineFrame.onLoad();
  const emit=(source,origin,data)=>listeners.get('message')({source,origin,data});
  assert.equal(offlineFrame.hidden,false);
  assert.equal(onlineFrame.hidden,true);
@@ -47,7 +48,7 @@ test('side panel preserves the bundled UI until a validated local frame is ready
  assert.equal(offlineFrame.hidden,true);
 });
 test('offline retry does not obscure the packaged UI',()=>{
- const offlineFrame={hidden:false,contentWindow:{}};
+ const offlineFrame={hidden:false,contentWindow:{postMessage:()=>{}},addEventListener:(_evt,fn)=>{offlineFrame.onLoad=fn}};
  const onlineFrame={hidden:true,contentWindow:{}};
  let handler;
  let ticker;
@@ -55,15 +56,44 @@ test('offline retry does not obscure the packaged UI',()=>{
   document:{getElementById:id=>({offlineFrame,onlineFrame})[id]},
   location:{origin:'chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'},
   window:{addEventListener:(_name,fn)=>handler=fn},
-  chrome:{runtime:{onMessage:{addListener:()=>{}}}},
+  chrome:{runtime:{sendNativeMessage:(_host,_message,callback)=>{callback({ok:true})},onMessage:{addListener:()=>{}}}},
   Date:{now:()=>12345},
   setInterval:fn=>ticker=fn
  };
  vm.runInNewContext(fs.readFileSync(path.join(extension,'panel.js'),'utf8'),context);
+ offlineFrame.onLoad();
  handler({source:offlineFrame.contentWindow,origin:context.location.origin,
   data:{app:'wardrobe-panel',type:'retry'}});
  assert.match(onlineFrame.src,/sidepanel=1&v=12345/);
  assert.equal(offlineFrame.hidden,false,'retry must not hide UI');
  ticker();
  assert.equal(offlineFrame.hidden,false,'automatic retry must not hide UI');
+});
+
+
+test('auto start reports missing Native Host but never hides offline UI',()=>{
+ const messages=[];const offlineFrame={hidden:false,contentWindow:{postMessage:msg=>messages.push(msg)},
+ addEventListener:(_type,fn)=>{offlineFrame.loaded=fn}};
+ const onlineFrame={hidden:true,contentWindow:{}};
+ let onMessage;
+ const context={
+  document:{getElementById:id=>({offlineFrame,onlineFrame})[id]},
+  location:{origin:'chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'},
+  window:{addEventListener:(_type,fn)=>onMessage=fn},
+  chrome:{runtime:{lastError:{message:'Native messaging host not found'},onMessage:{addListener:()=>{}},
+   sendNativeMessage:(host,payload,callback)=>{
+    assert.equal(host,'com.thinkerqaq.wardrobe');
+    assert.equal(payload.command,'ensure_bridge');
+    callback(undefined);
+   }}},
+  Date:{now:()=>17},setInterval:()=>{}
+ };
+ vm.runInNewContext(fs.readFileSync(path.join(extension,'panel.js'),'utf8'),context);
+ assert.equal(messages.length,0,'do not launch before UI is ready');
+ offlineFrame.loaded();
+ assert.equal(messages.length,1);
+ assert.equal(messages[0].ok,false);
+ assert.match(messages[0].error,/Native messaging host/);
+ assert.equal(offlineFrame.hidden,false);
+ assert.equal(onlineFrame.hidden,true);
 });

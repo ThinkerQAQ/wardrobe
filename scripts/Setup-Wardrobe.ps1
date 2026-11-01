@@ -1,6 +1,7 @@
 param(
  [string]$InstallDir = (Join-Path $env:LOCALAPPDATA 'Wardrobe'),
  [string]$WardrobeBinary = '',
+ [string]$ExtensionId = '',
  [switch]$NoTunnel,
  [switch]$NoStart,
  [switch]$NoAutostart,
@@ -147,6 +148,14 @@ try {
     }
     Say 'Wardrobe side panel files installed. In Edge > Extensions, load this unpacked folder once.'
   } else { Say 'Browser extension assets missing from this custom package; Web UI remains available.' }
+  if ($ExtensionId) {
+    if ($ExtensionId -cnotmatch '^[a-p]{32}$') { throw 'Invalid Edge/Chrome extension ID (expected 32 a-p letters)' }
+    & $targetExe --register-native-host $ExtensionId
+    if ($LASTEXITCODE -ne 0) { throw 'Native Messaging registration failed' }
+    Say 'Native Messaging: enabled for extension '+$ExtensionId
+  } else {
+    Say 'To enable on-demand startup, rerun setup with -ExtensionId from Edge/Chrome extension details.'
+  }
   Say 'Local installation: OK'
   if (!$NoStart) {
     & (Join-Path $InstallDir 'scripts\Start-Wardrobe-Local.ps1')

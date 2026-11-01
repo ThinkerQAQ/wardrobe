@@ -57,3 +57,12 @@ Linux/macOS example:
 These paths are examples. Use a disposable test directory; automated scripts never need personal Tunnel credentials.
 
 Official references: [Secure MCP Tunnels](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels) · [openai/tunnel-client](https://github.com/openai/tunnel-client).
+
+### Start the local service from the browser extension
+
+The Wardrobe side panel displays its bundled UI even when Core is stopped. For **auto-start on panel open** and the **Start local service** button, register the Native Messaging host once for your own extension ID (32 lowercase `a`–`p` letters shown under Edge/Chrome > Extensions > Details).
+
+- Windows: run `wardrobe.exe --register-native-host YOUR_EXTENSION_ID` from the installed Wardrobe directory. Alternatively, rerun `Setup-Wardrobe.cmd -ExtensionId YOUR_EXTENSION_ID -NoTunnel -NoStart`.
+- Linux/macOS: run `./wardrobe --register-native-host YOUR_EXTENSION_ID` from the installed program directory, or pass `--extension-id YOUR_EXTENSION_ID` to `scripts/setup.sh`.
+
+Browser registration installs `com.thinkerqaq.wardrobe` for your extension only. It uses browser Native Messaging to start the already-installed Wardrobe executable; it neither invokes arbitrary commands nor transfers your SQLite contents. If registration is absent, the offline UI and manual system startup still work. Re-register if you move the executable or change the unpacked extension ID.

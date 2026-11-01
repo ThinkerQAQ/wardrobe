@@ -27,6 +27,19 @@ var bundledSkills embed.FS
 var bundledSkillReferences embed.FS
 
 func main() {
+	if isNativeHostInvocation(os.Args[1:]) {
+		if err := runWardrobeNativeHost(os.Stdin, os.Stdout); err != nil {
+			log.Print(err)
+		}
+		return
+	}
+	if len(os.Args) == 3 && os.Args[1] == "--register-native-host" {
+		if err := registerWardrobeNativeHost(os.Args[2]); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("Wardrobe Native Messaging registered for extension " + os.Args[2])
+		return
+	}
 	exe, _ := os.Executable()
 	configPath := flag.String("config", filepath.Join(filepath.Dir(exe), "Data", "config.toml"), "TOML configuration file")
 	data := flag.String("data", "", "override configured data directory")

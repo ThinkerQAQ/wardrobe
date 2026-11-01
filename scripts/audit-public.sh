@@ -11,7 +11,7 @@ p=Path('browser-extension/manifest.json')
 m=json.loads(p.read_text())
 if m.get('host_permissions')!=['http://127.0.0.1:17936/*'] or m.get('content_scripts')!=[]:
     raise SystemExit('Public extension has source-specific site access')
-if set(m.get('permissions',[]))-{'storage','sidePanel'}:
+if set(m.get('permissions',[]))-{'storage','sidePanel','nativeMessaging'}:
     raise SystemExit('Public extension has unexpected permissions')
 patterns=[r'mtop\.taobao\.order',r'pcorder_center_list',r'h5api\.m\.taobao',r'wardrobe\.orderCapture',r'queryboughtlist',r'360buyimg\.com']
 for path in [Path('browser-extension'),Path('web'),Path('docs'),Path('skills')]:
