@@ -2,28 +2,164 @@
 
 [English](README.md)
 
-## 项目简介
+- [1. Introduction](#1-introduction)
+- [2. Quick Start](#2-quick-start)
+- [3. Configuration](#3-configuration)
+- [4. Optional Features](#4-optional-features)
+- [5. Development](#5-development)
+- [6. License](#6-license)
 
-本地衣橱与穿搭管理应用，提供 SQLite、Web 界面、Edge/Chrome 侧边栏和 MCP 工具，集中管理衣物、图片、搭配、发型与身体尺寸。公开 Core 可以独立运行，不包含也不依赖电商适配器、分发工具或浏览器自动化项目。
+## 1. Introduction
 
-## 快速开始
+买过哪些衣服，和衣柜里现在还有哪些衣服，并不是一回事。购物记录能告诉我们买过什么，却不一定知道衣服还在不在、穿着是否合身，也很难直接看出哪些单品适合一起搭配。商品图片、尺码、购买记录和日常搭配分散在不同地方，整理起来比较麻烦。
 
-### 1. 前置条件
+Wardrobe 把这些信息集中到本地管理。你可以整理衣服和配饰，核对购买记录、确认实际持有情况，保存尺码、照片和穿着反馈，再从已有单品中组合穿搭。平时可以使用 Web 工作台或 Edge/Chrome 侧边栏，需要 AI 辅助时再连接 MCP。
 
-使用发行包需要 Windows、Linux 或 macOS、浏览器，以及支持本地 stdio 的 MCP 客户端，用于下面的首次单品录入。不需要 Go、Node.js、私有仓库或账户 Cookie。源码编译所需 Go 版本以 [go.mod](go.mod) 为准。
+**公开仓库提供的是可以独立使用的 Wardrobe Core。** 它支持本地衣橱、订单文件导入和搭配管理，**不包含京东、淘宝的私有网页采集适配器**。安装扩展也不会自动获得电商同步能力。首次使用不需要电商账号、ChatGPT 或其他浏览器自动化工具。
 
-### 2. 下载与安装
+## 2. Quick Start
 
-从 [Releases](https://github.com/ThinkerQAQ/wardrobe/releases/latest) 下载对应系统/CPU 的压缩包和 `SHA256SUMS.txt`。Windows x64 选择 `windows-amd64`，Windows ARM64 选择 `windows-arm64`，Linux 选择 `linux-{amd64,arm64}`，macOS 选择 `darwin-{amd64,arm64}`。核对压缩包 SHA-256 与校验清单一致后解压：
+先安装本地应用，打开工作台，再完成一次「订单 → 衣橱」的实际操作。**Web UI 不依赖 MCP 或浏览器扩展**。
 
-- **Windows：**双击 `Setup-Wardrobe.cmd`，本地使用可跳过可选 Tunnel 步骤。默认安装目录为 `%LOCALAPPDATA%\Wardrobe`。
-- **Linux/macOS：**在解压目录运行 `bash scripts/setup.sh --no-tunnel`，默认安装到 `~/.local/share/wardrobe`。
+### 2.1. 准备环境
 
-安装程序初始化配置并启动应用，保留已有数据和配置。访问 <http://127.0.0.1:17936>，无需配对码。已有数据在其他目录时，应继续使用原目录并修改配置，避免建立另一份空库。
+需要 Windows、Linux 或 macOS 的 **x64/ARM64** 电脑，以及浏览器。正式 Release 已包含可执行文件，**日常安装不需要 Go 或 Node.js**。
 
-### 3. 连接本地 MCP 客户端
+如果已有 Wardrobe 数据，**保留原来的 `Data/` 目录**。不要在 Windows、WSL 之间无意建立另一份空数据库。
 
-在客户端 MCP 设置中添加服务器，将两个路径都替换为安装目录的绝对路径。Windows 命令以 `wardrobe.exe` 结尾，路径可使用正斜杠。
+### 2.2. 下载与安装
+
+1. 打开[最新 Release](https://github.com/ThinkerQAQ/wardrobe/releases/latest)，选择对应压缩包：`wardrobe-windows-amd64.zip`、`wardrobe-windows-arm64.zip`、`wardrobe-linux-amd64.tar.gz`、`wardrobe-linux-arm64.tar.gz`、`wardrobe-darwin-amd64.tar.gz` 或 `wardrobe-darwin-arm64.tar.gz`。
+2. 同时下载 **`SHA256SUMS.txt`**，核对压缩包与清单中**相同文件名**的 SHA-256。Windows 在下载目录执行 `Get-FileHash .\wardrobe-windows-*.zip -Algorithm SHA256`；Linux 执行 `sha256sum ./wardrobe-linux-*.tar.gz`；macOS 执行 `shasum -a 256 ./wardrobe-darwin-*.tar.gz`。不一致时停止安装。
+3. **完整解压**，确认目录中有 `wardrobe.exe` / `wardrobe`、`config.example.toml`、`scripts/` 和 `browser-extension/`。
+4. 运行对应系统的安装入口：
+
+**Windows：**在解压目录双击 `Setup-Wardrobe.cmd`；向导询问是否连接 ChatGPT Tunnel 时回答 **N**。默认安装至 `%LOCALAPPDATA%\Wardrobe`。也可以直接在解压目录的 PowerShell 中执行以下命令，跳过 Tunnel 提问：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Setup-Wardrobe.ps1 -NoTunnel
+```
+
+**Linux/macOS：**在解压目录打开终端：
+
+```bash
+bash scripts/setup.sh --no-tunnel
+```
+
+默认安装到 `~/.local/share/wardrobe`。安装程序复制应用和扩展文件，在系统支持时配置本地启动，**保留已有 `Data/`**。但复制扩展文件**不等于浏览器已经安装该扩展**。
+
+### 2.3. 打开本地工作台
+
+访问 [http://127.0.0.1:17936](http://127.0.0.1:17936)，左侧应有「订单库」「衣橱」「发型」「身体数据」「搭配」「Skills」。全新安装时没有任何衣物是正常的。
+
+网页打不开时，先启动**已安装目录**中的本地服务：
+
+**Windows PowerShell：**
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$env:LOCALAPPDATA\Wardrobe\scripts\Start-Wardrobe-Local.ps1"
+```
+
+**Linux/macOS：**
+
+```bash
+bash "$HOME/.local/share/wardrobe/scripts/start-local.sh"
+```
+
+系统没有可用的用户后台服务管理器时，保持终端运行。再访问 [http://127.0.0.1:17936/api/health](http://127.0.0.1:17936/api/health)，应返回 `{"app":"wardrobe","status":"ok"}`。**不需要配对码**。Core 关闭时扩展仍能显示离线工作台，但读取与保存衣橱数据需要本地服务。
+
+### 2.4. 验证一条订单进入衣橱
+
+下面是**虚构测试订单**，只建议在**全新测试数据库**中执行；已有真实数据时请跳过，改用已核实的订单。示例会保存到当前数据库，并非临时预览。
+
+通过本机 API 导入一条测试订单：
+
+**Windows PowerShell：**
+
+```powershell
+$body = '{"platform":"Demo","items":[{"order_id":"SYNTHETIC-001","line_id":"shirt-1","name":"Demo 衬衫","quantity":1}]}'
+Invoke-RestMethod -Uri 'http://127.0.0.1:17936/api/orders/import' -Method Post -ContentType 'application/json' -Body ([Text.Encoding]::UTF8.GetBytes($body))
+```
+
+**Linux/macOS：**
+
+```bash
+curl -fsS 'http://127.0.0.1:17936/api/orders/import' \
+  -H 'Content-Type: application/json' \
+  --data '{"platform":"Demo","items":[{"order_id":"SYNTHETIC-001","line_id":"shirt-1","name":"Demo 衬衫","quantity":1}]}'
+```
+
+首次执行应返回 `"inserted":1`。然后：
+
+1. 打开「**订单库**」，确认列表中有「Demo 衬衫」。
+2. 进入「**衣橱**」，点击「**整理穿搭入衣橱**」。按钮在**衣橱**页面，不在订单库。
+3. 确认衣橱中出现「Demo 衬衫」，持有状态仍为「**待确认**」；测试订单不能证明实际持有。
+4. 用相同配置重启服务，刷新页面，确认该衣物仍在。
+
+公开 Core 不包含京东、淘宝网页自动采集功能，因此对应的同步按钮不可用。本地订单文件可通过 API 导入，见 [Case 3](#43-case-3导入订单文件)。
+
+### 2.5. 安装浏览器侧边栏（可选）
+
+安装程序会把 `browser-extension/` 复制到**已安装 Wardrobe 的目录**。要在浏览器中使用侧边栏，并支持自动启动本地服务，仍需**加载扩展、获取扩展 ID，再注册 Native Messaging Host**：
+
+1. Edge 打开 `edge://extensions`，Chrome 打开 `chrome://extensions`，开启「开发者模式」，点击「加载解压缩的扩展程序」。
+2. 选择**安装目录**中的 `browser-extension/`（直接包含 `manifest.json`），不要选 ZIP 或仓库根目录。Windows 默认是 `%LOCALAPPDATA%\Wardrobe\browser-extension`；Linux/macOS 默认是 `~/.local/share/wardrobe/browser-extension`。
+3. 进入扩展「**详细信息**」，复制其 **32 位扩展 ID**。
+4. 用**已安装的可执行文件**注册，替换占位符：
+
+**Windows PowerShell：**
+
+```powershell
+Set-Location "$env:LOCALAPPDATA\Wardrobe"
+.\wardrobe.exe --register-native-host YOUR_EXTENSION_ID
+```
+
+**Linux/macOS：**
+
+```bash
+"$HOME/.local/share/wardrobe/wardrobe" --register-native-host YOUR_EXTENSION_ID
+```
+
+5. 在扩展管理页「**重新加载**」，点击工具栏中的 Wardrobe 图标。侧边栏应显示与 Web UI 相同的工作台。如果本地服务没启动，仍会显示离线界面，并通过 Native Host 尝试「**启动本地服务**」；连接成功后展示真实衣橱数据。
+
+必须先加载扩展，是因为**扩展 ID 只有加载后才能确定**。无需手动输入配对码或 API Token。移动安装位置或更换扩展 ID 后须重新注册；如果 Host 不可用，可按 [2.3](#23-打开本地工作台) 手动启动 Core。
+
+### 2.6. 常见问题
+
+- **网页打不开：**按 [2.3](#23-打开本地工作台) 启动服务，检查 `/api/health` 和 `17936` 端口是否被其他进程占用。
+- **侧边栏显示离线：**先检查是否加载了**安装目录**中的扩展、ID 是否正确、Native Host 是否注册，然后重新加载扩展。
+- **升级后衣橱为空：**核对原 `Data/config.toml` 与 `storage.data_dir`，不要切换成另一份 Windows/WSL SQLite。
+- **测试订单重复：**重复导入会去重；仅在隔离测试库执行一次即可。
+- **京东/淘宝同步按钮不存在：**公开 Core 不含电商网站采集器，是正常结果。
+- **macOS 拦截程序：**根据系统安全提示决定是否允许未公证的可执行文件。
+
+问题仍存在时可[提交 Issue](https://github.com/ThinkerQAQ/wardrobe/issues)，附操作系统、复现步骤和脱敏日志，**不要上传 `Data/`、订单或个人照片**。
+
+## 3. Configuration
+
+安装程序在**已安装可执行文件**旁创建 `Data/config.toml`，升级时保留。默认配置见 [config.example.toml](config.example.toml)：
+
+```toml
+[server]
+address = "127.0.0.1:17936"
+open_browser = true
+
+[storage]
+data_dir = "."
+```
+
+`data_dir = "."` 以配置文件所在目录为基准，通常是 `Data/`。发布版浏览器侧边栏固定连接本机 `17936` 端口；修改 `server.address` 后扩展不会自动调整。
+
+**备份与升级：**先停止服务，备份**完整 `Data/`**（SQLite、WAL、照片、`config.toml`）及 `Private/` 中的 Tunnel 凭据，再在原安装位置更新。升级后先检查本地健康接口和已有单品。页面「导出备份」只导出 JSON 记录，**不等于完整数据库与图片备份**。
+
+## 4. Optional Features
+
+### 4.1. Case 1：连接本地 MCP 客户端
+
+MCP 可以让 AI 搜索衣橱、导入人工核实的商品并保存搭配，但**不是 Web UI 或扩展的运行前提**。
+
+1. 找到**已安装**的 `wardrobe` / `wardrobe.exe` 及 `Data/config.toml`。
+2. 在本地 MCP 客户端添加以下 stdio 配置，使用**同一套安装位置**的绝对路径：
 
 ```json
 {
@@ -36,83 +172,80 @@
 }
 ```
 
-重连客户端，调用 `get_wardrobe_capabilities`，再用 `{"query":"Quick Start shirt"}` 调用 `search_wardrobe`，确认是否已创建过测试单品。stdio 与 Web 必须使用同一配置和数据目录。
+Windows 的命令以 `wardrobe.exe` 结尾，JSON 可以使用正斜杠路径。重连后调用 `get_wardrobe_capabilities`，再调用 `search_wardrobe`；做过测试的可以传入 `{"query":"Demo 衬衫"}`，否则查询自己的衣物，并与 Web UI 对照。
 
-### 4. 新建并验证一个单品
-
-在全新测试安装中，以以下参数调用 `create_wardrobe_product`。这是明确的手动示例，不是虚构的订单记录：
+如果需要录入**手动单品**，先搜索查重，再调用 `create_wardrobe_product`。`platform="手动"`、`verification="manual"` 是接口要求，即使英文界面也使用该值；`source_key` 必须唯一。独立测试库可用以下参数：
 
 ```json
 {
-  "source_key": "manual:quickstart:shirt-1",
+  "source_key": "manual:example:shirt-1",
   "platform": "手动",
   "order_id": "",
   "verification": "manual",
-  "name": "Quick Start shirt",
+  "name": "Sample shirt",
   "category": "衬衫",
   "color": "blue",
   "size": "M"
 }
 ```
 
-`手动` 是 API 规定的来源值，英文界面同样使用该值。记录返回的单品 ID/version，再次搜索，刷新 Web 并进入「衣橱」，应看到同一件单品。持有、合身和评分在本人明确确认前保持待确认状态。使用同一配置重启，单品仍应存在。这才算完成验收，只有空页面能打开还不够。重复导入同一个来源键会被拒绝。
+记录返回的 ID/version；相同来源键会被拒绝重复导入，修改时须使用最新 version。不能凭猜测虚构购买记录或本人持有状态。
 
-### 5. 常见问题
+### 4.2. Case 2：ChatGPT 远程连接
 
-- **升级后衣橱为空：**检查 `storage.data_dir` 和实际配置路径，不要覆盖已有 SQLite，也不要连接另一份 WSL 数据库。
-- **端口占用：**使用已有实例，或同步修改 `server.address`；扩展默认连接 17936。
-- **stdio 没有工具：**使用绝对路径，刷新连接，再调用能力工具。stdio 等待协议消息，不是交互式 Shell。
-- **重复或版本冲突：**搜索、读取已有记录，用最新 version 更新。
-- **macOS 信任提示：**二进制尚未经过 Apple 公证，需要用户自行处理系统授权。
+远程使用需要**你自己的 Secure MCP Tunnel、工作区授权和运行密钥**。重新运行安装向导（Windows：`Setup-Wardrobe.cmd`；Linux/macOS：`bash scripts/setup.sh`），这次选择 Tunnel 配置。向导下载并校验官方 Tunnel 客户端，创建**独立 stdio MCP** 连接。
 
-## 配置说明
+随后在账号支持时，通过 ChatGPT 的「**插件 → 添加自定义 MCP 服务器 → Tunnel**」选择自己的 Tunnel，完成授权。重连后先调用只读的 `get_wardrobe_capabilities` 和 `search_wardrobe` 验收。Tunnel **不会把整个本地 Web UI 发布到公网**。Windows 用 DPAPI 保护运行密钥，Unix 使用用户私有的 0600 凭据文件。
 
-安装程序在可执行文件旁创建 `Data/config.toml`。手动安装时，先将 [config.example.toml](config.example.toml) 复制到该位置，再连接客户端：
+### 4.3. Case 3：导入订单文件
 
-```toml
-[server]
-address = "127.0.0.1:17936"
-open_browser = true
+公开 Core 通过本机 `POST /api/orders/import-file` 导入**归一化 JSON、CSV 和 XLSX**。**当前 Web UI 没有上传订单文件的表单**，不要在界面中寻找「导入文件」按钮。
 
-[storage]
-data_dir = "."
+准备有权使用的订单数据，核对订单号、名称和规格，不要上传 Cookie 或未经筛选的原始平台响应。使用本机 `curl`：
+
+```bash
+curl -fsS 'http://127.0.0.1:17936/api/orders/import-file' \
+  -F 'platform=YourSource' \
+  -F 'file=@/absolute/path/to/normalized-orders.json'
 ```
 
-相对 `data_dir` 以配置文件所在目录为基准，`.` 即该 `Data/`。可用 `-config`、`-data`、`-addr`、`-open` 显式覆盖；服务器环境可用 `-open=false`。备份或迁移已停止的安装时，保留整个数据目录、图片、SQLite/WAL 与配置，不要提交到 Git。
+将平台名和文件路径换成实际值。导入后在「**订单库**」检查，再进入「**衣橱 → 整理穿搭入衣橱**」建立待确认衣物。补齐商品图是独立流程，部分远程图片来源需要另行配置可信主机。公开仓库**不包含电商私有采集适配器**。
 
-## 可选功能
+### 4.4. Case 4：搭配与图片
 
-### 浏览器侧边栏
+在「衣橱」核对商品、持有状态和合身反馈，只有本人确认后再标记为实际拥有。到「搭配」页面选择现有单品，保存组合。「身体数据」「发型」「Skills」分别管理对应内容。
 
-在 `edge://extensions` 或 `chrome://extensions` 开启开发者模式，选择「加载已解压的扩展」，加载安装目录的 `browser-extension/`。复制扩展 ID，用已安装可执行文件运行 `--register-native-host YOUR_EXTENSION_ID`，替换为真实 ID。重开侧边栏，验证「启动本地服务」。移动程序或扩展 ID 改变后需重新注册。扩展内置界面离线仍可浏览，数据与保存需要 Core。
+效果卡可以使用已授权的人像和商品图片生成静态搭配图，但**不是 AI 真人试穿**：真实试穿渲染接口尚未实现。记录和照片保存在本地，但通过云端 MCP 明确发送给 AI 的内容可能传输到相应服务。
 
-### 远程 ChatGPT
+## 5. Development
 
-拥有自己的 Tunnel / 工作区权限和 runtime 密钥时，重跑安装并选择 Tunnel 集成。安装程序下载和校验官方 tunnel-client。用户自行完成「Add custom MCP server → Tunnel」，刷新工具，调用 `get_wardrobe_capabilities`、`search_wardrobe` 验收。Tunnel 仅连接专用 stdio MCP，不转发完整 HTTP 界面。Windows 使用 DPAPI 保存密钥，Unix 使用用户所有的 0600 文件。不要复用开发者 Tunnel 或凭据。
+源码开发需要 Git 及 [go.mod](go.mod) 声明的 Go 工具链；仅在运行前端测试时需要 Node.js：
 
-### 订单、搭配和图片
-
-Core 通过本地 API 导入 CSV/XLSX/归一化 JSON。最小订单格式为 `{"platform":"example","items":[{"order_id":"demo-1","line_id":"sku-a","name":"Example coat","spec":"M","quantity":1}]}`，最新契约见 `order_file_import.go`、`orders.go`。公开 Core 不含电商采集器；可选来源适配器在构建时组合，手动衣橱无需它们。
-
-导入后在「衣橱 → 整理穿搭入衣橱」生成待确认候选；「补齐商品图」是独立操作，电商图片下载需要可选的可信图片主机策略。「搭配」页面可选择已有真实单品并保存组合。MCP 图片上传使用授权 JPEG/PNG 字节及最新记录版本。固定画册使用提供的人像与库存商品图生成 1200×1800 卡片，不是经过核验的真人试穿；试穿渲染接口尚未实现，返回 HTTP 501。
-
-`skills/` 中的模板和引用被嵌入二进制，属于运行时资产。用户编辑的 Skill 保存于 SQLite，不修改源码。
-
-## 开发与验证
-
-```sh
+```bash
 git clone https://github.com/ThinkerQAQ/wardrobe.git
 cd wardrobe
 go test ./...
 go vet ./...
 go build -o wardrobe .
+mkdir -p Data
 ./wardrobe -data ./Data -open=false
 ```
 
-使用 `go.mod` 声明的 Go 工具链，Go 可能自动下载对应版本。Windows 使用 `go build -o wardrobe.exe .` 和 `./wardrobe.exe`。访问本地界面，MCP 使用同一 `Data/`。
+Windows 可使用 `go build -o wardrobe.exe .`、`.\wardrobe.exe -data .\Data -open=false`（必要时先创建 `Data`），然后访问 [http://127.0.0.1:17936](http://127.0.0.1:17936)。
 
-前端检查：`node --test web/tests/*.test.cjs`、`node --test browser-extension/tests/*.test.cjs`、`node scripts/sync-browser-ui.mjs --check`。公开边界检查：`bash scripts/audit-public.sh`。CI 执行 Go 测试/vet、前端及安装检查、Windows 构建与数据保留测试、依赖许可和漏洞检查。发行目标为 Windows/Linux/macOS x64/ARM64，交叉编译不能证明 macOS 原生运行或账户授权已验收。
+```bash
+node --test web/tests/*.test.cjs
+node --test browser-extension/tests/*.test.cjs
+node scripts/sync-browser-ui.mjs --check
+bash scripts/audit-public.sh
+```
 
-## 许可证与合规
+CI 还验证安装器保留已有数据，并构建 Windows/Linux/macOS 的 x64/ARM64 版本。`skills/` 中的 Markdown 是**嵌入二进制的运行时资源**，不是冗余教程，不应删除。采用功能分支、PR Review 和 Squash Merge。
 
-原创代码采用 [MIT](LICENSE)，保留[第三方声明](THIRD_PARTY_NOTICES.md)及发行包中的依赖许可。源码许可不覆盖电商服务、订单数据、商品图或个人照片。仅使用有权访问的数据和素材，并遵守服务条款。经 MCP 请求的字段或图片可能传入所连接的 AI 服务，本地存储不代表所有处理均不经过云端。不要公开 Data、凭据、备份或私有适配器构建。详见[安全说明](SECURITY.md)。
+## 6. License
+
+Wardrobe 原创代码采用 [MIT License](LICENSE)。第三方依赖遵循各自许可证，详见[第三方声明](THIRD_PARTY_NOTICES.md)及发行包中的 `THIRD_PARTY_LICENSES/`。电商内容、购买记录、商品照片及个人图片不属于源码授权范围。
+
+**安全与隐私：**Wardrobe 是仅供**单用户、本机**使用的应用，不能把完整 HTTP 工作台、导出接口或未保护的服务暴露到公网。保护 `Data/`、`Private/`、照片、订单与 MCP Token。现有侧边栏通过本地同源界面访问数据，**不需要配对码**；旧版带配对的订单接口仅为兼容而保留。备份前先停止数据库访问，以免遗漏 WAL。
+
+云端 MCP 调用可能将指定字段或图片传给相应 AI 服务；应审查扩展权限和第三方素材的使用授权。安全问题请发送至 **contact@thinkerqaq.com**，仅提供脱敏复现信息，不要在公开 Issue 中提交凭据、收货地址、购物记录或私人照片。

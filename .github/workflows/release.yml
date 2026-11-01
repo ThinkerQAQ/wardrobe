@@ -40,7 +40,7 @@ jobs:
           GOOS="${{ matrix.goos }}" GOARCH="${{ matrix.goarch }}" CGO_ENABLED=0 .build/tools/go-licenses report . --ignore=wardrobe > staging/THIRD_PARTY_LICENSES/DEPENDENCIES.csv
           cp "$(go env GOROOT)/LICENSE" staging/THIRD_PARTY_LICENSES/Go-LICENSE
           go version > staging/THIRD_PARTY_LICENSES/BUILD.txt
-          cp config.example.toml LICENSE README.md README_ZH.md SECURITY.md SECURITY_ZH.md THIRD_PARTY_NOTICES.md staging/
+          cp config.example.toml LICENSE README.md README_ZH.md THIRD_PARTY_NOTICES.md staging/
           bash scripts/audit-public.sh
           mkdir -p staging/scripts
           bash scripts/audit-public.sh
