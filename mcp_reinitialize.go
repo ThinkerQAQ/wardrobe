@@ -54,11 +54,19 @@ func runReinitializableMCPStdio(ctx context.Context, server func() *mcp.Server, 
 		// Inspect method only, never log or copy raw order payloads to disk.
 		var envelope struct {
 			Method string `json:"method"`
+			Params struct {
+				Meta map[string]json.RawMessage `json:"_meta"`
+			} `json:"params"`
 		}
 		if err := json.Unmarshal(frame, &envelope); err != nil {
 			continue
 		}
-		if envelope.Method == "initialize" {
+		// MCP 2026-07-28 starts with server/discover (or a request with
+		// per-request protocol metadata), not the legacy initialize handshake.
+		// Without this branch, ChatGPT discovery is silently discarded while
+		// the Tunnel itself stays Ready and eventually times out.
+		_, modern := envelope.Params.Meta["io.modelcontextprotocol/protocolVersion"]
+		if envelope.Method == "initialize" || envelope.Method == "server/discover" || (current == nil && modern) {
 			generation.Add(1)
 			stop()
 			rdr, wtr := io.Pipe()

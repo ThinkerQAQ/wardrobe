@@ -10,7 +10,7 @@ class InstallerTests(unittest.TestCase):
  def fixture(self,root,osname):
   src=root/"stage"
   (src/"browser-extension/icons").mkdir(parents=True)
-  (src/"browser-extension/manifest.json").write_text('{"version":"1.1.1"}')
+  (src/"browser-extension/manifest.json").write_text('{"version":"1.1.2"}')
   (src/"browser-extension/icons/icon128.png").write_bytes(b"fake-icon")
   (src/"brand").mkdir()
   (src/"brand/wardrobe.ico").write_bytes(b"fake-ico")
@@ -25,7 +25,7 @@ class InstallerTests(unittest.TestCase):
   for osname in ("windows","linux","darwin"):
    with self.subTest(osname=osname),tempfile.TemporaryDirectory() as td:
     root=Path(td);stage=self.fixture(root,osname);dst=root/"installer"
-    p.prepare(stage,dst,"1.1.1",osname)
+    p.prepare(stage,dst,"1.1.2",osname)
     cfg=ET.parse(dst/"config/config.xml").getroot()
     self.assertEqual(cfg.findtext("RemoveTargetDir"),"false")
     package=dst/"packages/com.thinkerqaq.wardrobe/data"
@@ -41,5 +41,5 @@ class InstallerTests(unittest.TestCase):
    with self.subTest(file=file),tempfile.TemporaryDirectory() as td:
     root=Path(td);src=self.fixture(root,"windows");f=src/file
     f.parent.mkdir(parents=True,exist_ok=True);f.write_text("secret")
-    with self.assertRaises(ValueError):p.prepare(src,root/"installer","1.1.1","windows")
+    with self.assertRaises(ValueError):p.prepare(src,root/"installer","1.1.2","windows")
 if __name__=="__main__": unittest.main()
