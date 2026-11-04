@@ -29,6 +29,12 @@ try {
   if (!(Test-Path (Join-Path $InstallDir 'Data/config.toml'))) {
     throw 'First run did not initialize Data/config.toml'
   }
+  # Test first-run health and MCP discovery sequentially: a fresh SQLite
+  # database may still be completing startup work on a loaded CI runner.
+  if (!$proc.HasExited) {
+    $proc.Kill()
+    $proc.WaitForExit(8000) | Out-Null
+  }
   $stdioInfo=[System.Diagnostics.ProcessStartInfo]::new()
   $stdioInfo.FileName=$bin
   $stdioInfo.Arguments='--mcp-stdio --config "' + (Join-Path $InstallDir 'Data/config.toml') + '"'
@@ -46,7 +52,11 @@ try {
       $stdio.StandardInput.WriteLine($request)
       $stdio.StandardInput.Flush()
       $task=$stdio.StandardOutput.ReadLineAsync()
-      if (!$task.Wait(10000)) { throw ('Modern MCP request timed out: '+$pair[1]) }
+      if (!$task.Wait(20000)) {
+        $exited=$stdio.HasExited
+        $code=if($exited){$stdio.ExitCode}else{'running'}
+        throw ('Modern MCP request timed out: '+$pair[1]+'; process='+$code)
+      }
       $result=$task.Result | ConvertFrom-Json
       if ($result.error) { throw ('Modern MCP error: '+$pair[1]) }
       if ($result.id -ne $pair[0]) { throw 'Modern MCP response ID mismatch' }
