@@ -107,6 +107,33 @@ Component.prototype.createOperations = function() {
     script+=(ASSETS/"finish.qs").read_text().replace("__PLATFORM__",target)
     (meta/"installscript.qs").write_text(script)
     # Data/ and Private/ are deliberately absent from every tracked install operation.
+
+def ensure_windows_gui_subsystem(executable):
+    """QtIFW binarycreator emits a console PE; prevent a black CMD window on launch."""
+    with executable.open("r+b") as binary:
+        if binary.read(2) != b"MZ":
+            raise ValueError("Windows installer is not a PE executable")
+        binary.seek(0x3c)
+        pe_offset=int.from_bytes(binary.read(4),"little")
+        if pe_offset < 64 or pe_offset > executable.stat().st_size - 96:
+            raise ValueError("Windows installer has an invalid PE offset")
+        binary.seek(pe_offset)
+        if binary.read(4) != b"PE\0\0":
+            raise ValueError("Windows installer has no PE signature")
+        optional_header=pe_offset + 24
+        binary.seek(optional_header)
+        if int.from_bytes(binary.read(2),"little") not in (0x10b,0x20b):
+            raise ValueError("Windows installer has an unsupported PE header")
+        subsystem_offset=optional_header + 68
+        binary.seek(subsystem_offset)
+        subsystem=int.from_bytes(binary.read(2),"little")
+        if subsystem not in (2,3):
+            raise ValueError("Windows installer is neither GUI nor console")
+        if subsystem == 3:
+            binary.seek(subsystem_offset)
+            binary.write((2).to_bytes(2,"little"))
+        # Only the PE subsystem is changed; the appended Qt installer payload is intact.
+
 def main():
     p=argparse.ArgumentParser()
     p.add_argument("--stage",type=pathlib.Path,required=True)
@@ -128,4 +155,6 @@ def main():
         prepare(a.stage.resolve(),path,a.version,a.os)
         subprocess.run([a.binarycreator,"--offline-only","-c",str(path/"config/config.xml"),
                         "-p",str(path/"packages"),str(a.output.resolve())],check=True)
+    if a.os == "windows":
+        ensure_windows_gui_subsystem(a.output.resolve())
 if __name__=="__main__":main()

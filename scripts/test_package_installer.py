@@ -42,4 +42,27 @@ class InstallerTests(unittest.TestCase):
     root=Path(td);src=self.fixture(root,"windows");f=src/file
     f.parent.mkdir(parents=True,exist_ok=True);f.write_text("secret")
     with self.assertRaises(ValueError):p.prepare(src,root/"installer","1.1.2","windows")
+ def test_windows_console_binary_becomes_gui_without_touching_payload(self):
+  with tempfile.TemporaryDirectory() as td:
+   exe=Path(td)/"Wardrobe-Setup.exe"
+   content=bytearray(512)
+   content[:2]=b"MZ"
+   content[0x3c:0x40]=(0x80).to_bytes(4,"little")
+   content[0x80:0x84]=b"PE\0\0"
+   content[0x98:0x9a]=(0x20b).to_bytes(2,"little")
+   offset=0x98+68
+   content[offset:offset+2]=(3).to_bytes(2,"little")
+   original=bytes(content)+b"QTIFW_PAYLOAD_STAYS_UNCHANGED"
+   exe.write_bytes(original)
+   p.ensure_windows_gui_subsystem(exe)
+   modified=exe.read_bytes()
+   self.assertEqual(modified[offset:offset+2],(2).to_bytes(2,"little"))
+   self.assertEqual(modified[:offset]+modified[offset+2:],original[:offset]+original[offset+2:])
+   p.ensure_windows_gui_subsystem(exe)
+   self.assertEqual(exe.read_bytes(),modified)
+ def test_windows_gui_patch_rejects_invalid_executable(self):
+  with tempfile.TemporaryDirectory() as td:
+   exe=Path(td)/"invalid.exe"
+   exe.write_bytes(b"invalid executable")
+   with self.assertRaises(ValueError):p.ensure_windows_gui_subsystem(exe)
 if __name__=="__main__": unittest.main()

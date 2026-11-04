@@ -24,6 +24,16 @@ def main():
     p.add_argument("--installer",type=Path,required=True)
     p.add_argument("--workdir",type=Path,required=True)
     a=p.parse_args()
+    with a.installer.open("rb") as binary:
+        if binary.read(2) != b"MZ":
+            raise AssertionError("Windows installer is not a PE executable")
+        binary.seek(0x3c)
+        pe_offset=int.from_bytes(binary.read(4),"little")
+        binary.seek(pe_offset+24+68)
+        subsystem=int.from_bytes(binary.read(2),"little")
+        if subsystem != 2:
+            raise AssertionError(f"Installer must be GUI subsystem (2), got {subsystem}")
+    print("WINDOWS_GUI_SUBSYSTEM_OK",flush=True)
     qa=a.workdir.resolve()
     qa.mkdir(parents=True,exist_ok=False)
     target=qa/"install with spaces"
