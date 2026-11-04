@@ -89,12 +89,26 @@ func (a *application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.serveLocale(w, r)
 		return
 	}
+	if p == "/api/mcp-connection" {
+		// Never permit arbitrary extension origins or cross-site requests to manage secrets.
+		origin := r.Header.Get("Origin")
+		if origin != "" && origin != "http://"+a.host {
+			http.Error(w, "MCP settings require local Wardrobe origin", http.StatusForbidden)
+			return
+		}
+		if r.Header.Get("Sec-Fetch-Site") == "cross-site" {
+			http.Error(w, "cross-site MCP management denied", http.StatusForbidden)
+			return
+		}
+		a.handleMCPConnection(w, r)
+		return
+	}
 	if p == "/api/capabilities" && r.Method == "GET" {
 		jsonOut(w, 200, map[string]bool{"retailerSync": retailerSyncEnabled, "remoteOrderImages": len(allowedOrderImageHosts) > 0})
 		return
 	}
 	if p == "/api/health" {
-		jsonOut(w, 200, map[string]string{"status": "ok", "app": "wardrobe"})
+		jsonOut(w, 200, map[string]string{"status": "ok", "app": "wardrobe", "version": appVersion})
 		return
 	}
 	if p == "/api/export" && r.Method == "GET" {

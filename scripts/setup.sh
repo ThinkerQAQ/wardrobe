@@ -4,13 +4,13 @@ umask 077
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEST="$HOME/.local/share/wardrobe"
 BINARY=""
-NO_TUNNEL=0; NO_START=0; NO_AUTOSTART=0; NONINTERACTIVE=0; EXTENSION_ID=""
+NO_START=0; NO_AUTOSTART=0; NONINTERACTIVE=0; EXTENSION_ID=""
 while (($#)); do
  case "$1" in
  --install-dir) DEST="$2";shift 2;; --extension-id) EXTENSION_ID="$2";shift 2;; --binary) BINARY="$2";shift 2;;
- --no-tunnel) NO_TUNNEL=1;shift;; --no-start) NO_START=1;shift;;
+ --no-start) NO_START=1;shift;;
  --no-autostart) NO_AUTOSTART=1;shift;; --non-interactive) NONINTERACTIVE=1;shift;;
- --help|-h) echo 'Usage: bash scripts/setup.sh [--install-dir DIR] [--extension-id ID] [--binary FILE] [--no-tunnel] [--no-start] [--no-autostart] [--non-interactive]';exit 0;;
+ --help|-h) echo 'Usage: bash scripts/setup.sh [--install-dir DIR] [--extension-id ID] [--binary FILE] [--no-start] [--no-autostart] [--non-interactive]';exit 0;;
  *) echo "Unknown option: $1" >&2;exit 2;; esac
 done
 say(){ echo "[Wardrobe] $*"; }
@@ -61,7 +61,7 @@ if [[ ! -f "$DEST/Data/config.toml" ]];then
  if [[ -f "$SRC/config.example.toml" ]];then cp "$SRC/config.example.toml" "$DEST/Data/config.toml"
  else printf '[server]\naddress = "127.0.0.1:17936"\nopen_browser = false\n\n[storage]\ndata_dir = "."\n' > "$DEST/Data/config.toml";fi
 fi
-for name in start-local.sh start-tunnel.sh;do
+for name in start-local.sh Open-Wardrobe.sh;do
  [[ -f "$SRC/scripts/$name" ]] || fail "Missing scripts/$name"
  [[ "$SRC/scripts/$name" == "$DEST/scripts/$name" ]] || cp "$SRC/scripts/$name" "$DEST/scripts/$name"
  chmod 700 "$DEST/scripts/$name"
@@ -121,56 +121,5 @@ if ((NO_START==0));then
  if curl -fsS --max-time 3 http://127.0.0.1:17936/api/health | grep -q '"app":"wardrobe"';then say 'Local Web UI: http://127.0.0.1:17936'
  else say 'Service not ready. Check the local process/service and port 17936.';fi
 fi
-CONNECT=0
-if ((NO_TUNNEL==0&&NONINTERACTIVE==0));then
- read -r -p 'Connect to ChatGPT using your own OpenAI Tunnel? [Y/n] ' ans
- [[ -z "$ans" || "$ans" =~ ^[Yy]$ ]] && CONNECT=1
-fi
-if ((CONNECT));then
- client="$DEST/bin/tunnel-client"
- if [[ ! -x "$client" ]];then
-  command -v unzip >/dev/null || fail 'unzip required'
-  say 'Downloading official tunnel-client and verifying SHA256'
-  tag="$(curl -LsS -o /dev/null -w '%{url_effective}' https://github.com/openai/tunnel-client/releases/latest)"
-  tag="$(basename "$tag")"
-  [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail 'Unable to determine official tunnel-client release version'
-  name="tunnel-client-$tag-$OS-$ARCH.zip"
-  url="https://github.com/openai/tunnel-client/releases/download/$tag"
-  download "$url/$name" "$TMP/$name"
-  download "$url/SHA256SUMS.txt" "$TMP/tunnel-sha.txt"
-  checksha "$TMP/$name" "$TMP/tunnel-sha.txt"
-  mkdir -p "$TMP/tunnel";unzip -q "$TMP/$name" -d "$TMP/tunnel"
-  found="$(find "$TMP/tunnel" -type f -name tunnel-client | head -1)"
-  [[ -n "$found" ]] || fail 'Official tunnel-client binary missing'
-  cp "$found" "$client";chmod 700 "$client"
- fi
- idfile="$DEST/Private/tunnel-id"
- if [[ -f "$idfile" ]];then id="$(cat "$idfile")"
- else
-  say 'Create a personal Tunnel ID in Platform Tunnel Settings (account permission required).'
-  openurl 'https://platform.openai.com/settings/organization/tunnels'
-  read -r -p 'Paste your own tunnel_id: ' id
- fi
- [[ "$id" =~ ^tunnel_[a-z0-9]{32}$ ]] || fail 'Invalid tunnel_id'
- printf '%s' "$id" > "$idfile";chmod 600 "$idfile"
- secret="$DEST/Private/tunnel-key"
- if [[ ! -f "$secret" ]];then
-  openurl 'https://platform.openai.com/settings/organization/api-keys'
-  read -r -s -p 'Paste restricted runtime API key (hidden): ' key;printf '\n'
-  (( $(printf '%s' "$key" | wc -c) >= 12 )) || fail 'Runtime API key missing'
-  printf '%s' "$key" > "$secret"
-  chmod 600 "$secret";unset key
-  say 'Runtime key saved only in a local user-owned 0600 file under Private/.'
- fi
- CONTROL_PLANE_API_KEY="$(cat "$secret")"
- export CONTROL_PLANE_API_KEY
- cmd="\"$DEST/wardrobe\" -mcp-stdio -config \"$DEST/Data/config.toml\""
- "$client" init --force --sample sample_mcp_stdio_local --profile wardrobe --profile-dir "$DEST/Private/profiles" --tunnel-id "$id" --mcp-command "$cmd" --health-listen-addr 127.0.0.1:0 --control-plane-api-key-ref env:CONTROL_PLANE_API_KEY
- "$client" doctor --profile wardrobe --profile-dir "$DEST/Private/profiles" --explain || fail 'Tunnel doctor failed. Check permissions and rerun'
- unset CONTROL_PLANE_API_KEY
- autostart tunnel "$DEST/scripts/start-tunnel.sh"
- say 'Finish in ChatGPT: Plugins > + > Add custom MCP server > Tunnel. Select this personal tunnel and approve.'
- openurl 'https://chatgpt.com/'
-else say 'Tunnel skipped. Rerun setup later to connect.';fi
 if ((NO_START==0&&NONINTERACTIVE==0));then openurl 'http://127.0.0.1:17936';fi
-say 'Setup finished. Verify ChatGPT tool discovery with a read-only wardrobe search.'
+say 'Setup finished. Configure the optional ChatGPT Tunnel in Wardrobe > MCP Connection.'

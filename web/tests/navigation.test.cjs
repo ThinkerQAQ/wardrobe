@@ -4,9 +4,9 @@ const html=fs.readFileSync('web/index.html','utf8'),js=fs.readFileSync('web/app.
 test('desktop and extension use ordered icon navigation',()=>{
  const nav=html.match(/<nav class="appNav"[^>]*>(.*?)<\/nav>/s)?.[1];assert.ok(nav);
  const ids=[...nav.matchAll(/id="([a-zA-Z]+Tab)"/g)].map(m=>m[1]);
- assert.deepEqual(ids,['ordersTab','wardrobeTab','hairTab','bodyTab','looksTab','skillsTab']);
- assert.equal((nav.match(/class="navIcon"/g)||[]).length,6);
- assert.equal((nav.match(/viewBox="0 0 24 24"/g)||[]).length,6);
+ assert.deepEqual(ids,['ordersTab','wardrobeTab','hairTab','bodyTab','looksTab','mcpTab','skillsTab']);
+ assert.equal((nav.match(/class="navIcon"/g)||[]).length,7);
+ assert.equal((nav.match(/viewBox="0 0 24 24"/g)||[]).length,7);
  assert.match(html,/class="appShell"/);assert.match(html,/class="workspaceMain"/);
 });
 test('orders is the default route with no manual pairing',()=>{

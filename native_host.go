@@ -183,12 +183,19 @@ func registerWardrobeNativeHost(extensionID string) error {
 	if err != nil {
 		return err
 	}
+	runnerExecutable := exe
+	if runtime.GOOS == "windows" {
+		gui := filepath.Join(filepath.Dir(exe), "wardrobe-host.exe")
+		if st, err := os.Stat(gui); err == nil && !st.IsDir() {
+			runnerExecutable = gui // Windows GUI subsystem for browser Native Messaging
+		}
+	}
 	manifest := nativeManifestPath(exe)
 	previous, readErr := os.ReadFile(manifest)
 	if readErr != nil && !errors.Is(readErr, os.ErrNotExist) {
 		return readErr
 	}
-	descriptor, err := buildNativeManifest(exe, extensionID, previous)
+	descriptor, err := buildNativeManifest(runnerExecutable, extensionID, previous)
 	if err != nil {
 		return err
 	}

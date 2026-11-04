@@ -7,3 +7,13 @@ Official release builds run pinned upstream `github.com/google/go-licenses/v2@v2
 Dependency versions are pinned in go.mod and go.sum. Core includes the MCP Go SDK, TOML parser, Go image packages, modernc SQLite and their transitive dependencies. The generated report and full texts describe the actual release; this summary does not replace those texts.
 
 官方发行包按实际目标平台生成完整依赖许可、版本清单及 Go 运行时许可，位于 THIRD_PARTY_LICENSES。收集失败会阻止打包。MIT 仅覆盖原创代码，不授权第三方服务、订单数据或商品图片；私有适配器须独立处理依赖授权。数据库、个人照片和运行配置不属于发行包。
+
+
+Native Go MCP/Tunnel supervision is adapted from the MIT-licensed SyndiRelay
+PR #29 and Reverfolio PR #40 (ThinkerQAQ). Their copyright and MIT license
+terms are retained. Qt Installer Framework packaging uses patterns from the
+MIT-licensed Reverfolio and VidOtter installers, and is subject to the
+applicable Qt Installer Framework distribution license.
+
+原生 MCP 生命周期复用 SyndiRelay #29、Reverfolio #40 的 MIT 实现；
+安装器参考 Reverfolio / VidOtter。保留原作者版权声明及第三方许可。

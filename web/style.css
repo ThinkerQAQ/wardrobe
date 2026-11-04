@@ -320,3 +320,19 @@ button.danger:hover{background:#fff2ef;border-color:#b76554}
 .offlineActions #startLocal{background:#345548;color:#fff}
 .extension-host .offlineActions{width:100%}
 .extension-host .offlineActions button{flex:1 1 auto}
+
+/* Unified native MCP connection settings */
+.mcpSettings{display:grid;gap:20px;max-width:1050px}
+.mcpSettings[hidden]{display:none}
+.mcpCard{background:var(--panel,#fff);border:1px solid var(--border,#d7e3dc);border-radius:16px;padding:24px;min-width:0}
+.mcpCard h3{margin:0 0 7px;font-size:19px}
+.mcpCard h4{margin:22px 0 6px}
+.mcpState{font-weight:600;margin:20px 0;background:rgba(52,85,72,.07);border-radius:10px;padding:12px}
+.mcpFields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.mcpFields label{display:grid;gap:8px;font-weight:600}
+.mcpFields input{width:100%;min-width:0;font-weight:normal}
+.mcpOptions{display:flex;gap:20px;flex-wrap:wrap;margin:20px 0}
+.mcpOptions label{display:flex;align-items:center;gap:8px}
+.mcpButtons{display:flex;flex-wrap:wrap;gap:9px}
+.mcpConfig{padding:14px;background:rgba(52,85,72,.06);border-radius:10px;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere;cursor:copy}
+@media(max-width:700px){.mcpFields{grid-template-columns:1fr}.mcpCard{padding:16px}}

@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wardrobe · 我的衣橱</title><meta name="theme-color" content="#345548"><link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css"><script src="./runtime.js" defer></script><script src="./locale.js" defer></script><script src="./app.js" defer></script><script src="./orders.js" defer></script><script src="./extension-controls.js" defer></script></head><body>
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wardrobe · 我的衣橱</title><meta name="theme-color" content="#345548"><link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css"><script src="./runtime.js" defer></script><script src="./locale.js" defer></script><script src="./app.js" defer></script><script src="./orders.js" defer></script><script src="./extension-controls.js" defer></script><script src="./mcp-connection.js" defer></script></head><body>
 <header class="appHeader">
  <div class="brandIdentity"><img class="brandMark" src="./favicon.svg" width="43" height="43" alt=""><div><div class="brandHeading"><h1>Wardrobe</h1><span class="bridgeIndicator" id="bridgeIndicator"><span class="statusDot" aria-hidden="true"></span>本地已连接</span></div><p class="brandSubtitle">个人衣橱 · 穿搭管理工作台</p></div></div>
  <div class="headerTools">
@@ -15,6 +15,7 @@
  <button id="hairTab" class="navButton" title="发型" aria-label="发型"><span class="navIcon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="11" r="7"/><path d="M5 11c1-5 5-6 7-6 4 0 6 3 7 6M9 14h.01M15 14h.01M10 17c1.3 1 2.7 1 4 0M5 11 3 9M19 11l2-2"/></svg></span><span class="navText">发型</span></button>
  <button id="bodyTab" class="navButton" title="身体数据" aria-label="身体数据"><span class="navIcon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4" r="2"/><path d="m8 8 4 1 4-1M12 9v7m0-7-5 3m5-3 5 3m-5 4-4 5m4-5 4 5"/></svg></span><span class="navText">身体数据</span></button>
  <button id="looksTab" class="navButton" title="搭配" aria-label="搭配"><span class="navIcon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="11" height="13" rx="2"/><path d="M9 3h9a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H8M7 10h5M7 14h5"/></svg></span><span class="navText">搭配</span></button>
+ <button id="mcpTab" class="navButton navSettings" title="MCP 连接" aria-label="MCP 连接"><span class="navIcon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 8h4m2 0h4M7 16h4m2 0h4M11 8l2 8M5 4h14v16H5z"/></svg></span><span class="navText">MCP 连接</span></button>
  <button id="skillsTab" class="navButton navSettings" title="Skills" aria-label="Skills"><span class="navIcon"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3m0 14v3M4.9 4.9l2.1 2.1m10 10 2.1 2.1M2 12h3m14 0h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></span><span class="navText">Skills</span></button>
 </nav><main class="workspaceMain"><section class="intro"><div><h2 id="title">订单库</h2><p id="summary">管理已导入的本地订单记录，筛选穿搭商品。</p></div><button id="newLook" class="primary" hidden><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg><span>新建搭配</span></button></section>
 <section id="offlineNotice" class="offlineNotice" role="status" aria-live="polite" hidden>
@@ -46,6 +47,31 @@
  <div class="orderFilters"><input id="ordersSearch" placeholder="搜索商品、店铺、订单编号…"><select id="ordersPlatform"><option value="">全部平台</option><option value="淘宝">淘宝</option><option value="京东">京东</option></select><select id="ordersScope"><option value="wearable">仅穿搭相关</option><option value="all">全部订单商品</option><option value="unlinked">待入库穿搭商品</option></select><select id="ordersCategory"><option value="">全部穿搭分类</option></select></div>
  <p id="ordersStatus" class="meta ordersListStatus" role="status"></p>
  <div id="ordersList" class="orderList"></div>
+</section>
+<section id="mcpPanel" class="mcpSettings" hidden aria-label="MCP 连接设置">
+ <article class="mcpCard"><h3>本地 Tunnel 服务</h3><p class="meta">Wardrobe 的衣橱功能独立运行；Tunnel 仅用于可选的 ChatGPT 连接。</p>
+ <p id="mcpConnectionState" class="mcpState" role="status" aria-live="polite">正在读取连接状态…</p>
+ <div class="mcpFields">
+  <label> Tunnel ID <input id="mcpTunnelID" type="text" spellcheck="false" autocomplete="off" placeholder="tunnel_…" aria-label="Tunnel ID"></label>
+  <label> Runtime API Key <input id="mcpKey" type="password" spellcheck="false" autocomplete="new-password" placeholder="Runtime API Key" aria-label="Runtime API Key"></label>
+ </div>
+ <div class="mcpOptions">
+  <label><input id="mcpLoginStartup" type="checkbox"> 登录时自动启动 Tunnel 服务</label>
+  <label><input id="mcpAutoConnect" type="checkbox"> 启动后自动连接 Tunnel</label>
+ </div>
+ <div class="mcpButtons">
+  <button id="mcpSave" class="primary" type="button">保存</button>
+  <button id="mcpStart" type="button">启动</button><button id="mcpStop" type="button">停止</button>
+  <button id="mcpRestart" type="button">重启</button><button id="mcpConnect" type="button">连接</button><button id="mcpDisconnect" type="button">断开</button>
+ </div>
+ <p id="mcpMissingClient" class="meta" hidden>首次连接需要官方 Tunnel Client。<button id="mcpInstallClient" type="button">安装官方 Client</button></p>
+ <p id="mcpSaveState" class="meta" role="status"></p><p id="mcpFeedback" class="meta" role="status" aria-live="polite"></p>
+ </article>
+ <article class="mcpCard"><h3>ChatGPT 插件</h3><p class="meta">先保存并启动 Tunnel，再在 ChatGPT 中添加 / 授权对应插件。Tunnel Ready 不代表插件已授权。</p>
+ <p><a href="https://chatgpt.com/plugins" target="_blank" rel="noopener noreferrer">打开 ChatGPT 插件</a></p>
+ <h4>本地 STDIO MCP</h4><p class="meta">不需要 Tunnel；把下面的配置添加到本机 MCP 客户端。</p>
+ <pre id="mcpLocalSTDIO" class="mcpConfig" tabindex="0" title="点击复制配置" aria-label="本地 MCP STDIO 配置"></pre>
+ </article>
 </section>
 <section id="skillsPanel" class="skillLayout" hidden aria-label="Skill 编辑器">
  <aside class="skillSidebar"><h3>已安装的工作流</h3><p class="meta">内置模板与本地编辑版本</p><div id="skillList" class="skillList" role="navigation" aria-label="选择 Skill"></div></aside>

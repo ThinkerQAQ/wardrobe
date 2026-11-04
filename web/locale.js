@@ -5,6 +5,20 @@
 // never sent to a translation service.
 (function(root){
  const en={
+ 'MCP 连接':'MCP Connection','本地 Tunnel 服务':'Local Tunnel Service',
+ 'Wardrobe 的衣橱功能独立运行；Tunnel 仅用于可选的 ChatGPT 连接。':'Wardrobe works without a Tunnel. Connect one only for optional ChatGPT access.',
+ '登录时自动启动 Tunnel 服务':'Start Tunnel at login',
+ '启动后自动连接 Tunnel':'Auto-connect when Tunnel starts',
+ '保存':'Save','启动':'Start','停止':'Stop','重启':'Restart','连接':'Connect','断开':'Disconnect',
+ '首次连接需要官方 Tunnel Client。':'The official Tunnel Client is required on first connection.',
+ '安装官方 Client':'Install official client',
+ 'ChatGPT 插件':'ChatGPT Plugin',
+ '先保存并启动 Tunnel，再在 ChatGPT 中添加 / 授权对应插件。Tunnel Ready 不代表插件已授权。':'Save and start the Tunnel, then add and authorize your ChatGPT plugin. Tunnel Ready does not mean authorization is complete.',
+ '打开 ChatGPT 插件':'Open ChatGPT plugins',
+ '本地 STDIO MCP':'Local STDIO MCP',
+ '不需要 Tunnel；把下面的配置添加到本机 MCP 客户端。':'No Tunnel required. Add this configuration to a local MCP client.',
+ '本地服务、Tunnel 与 ChatGPT 插件独立管理。':'Manage the local service, Tunnel, and ChatGPT plugin separately.',
+
  '语言':'Language','自动':'Auto','中文':'中文','界面语言':'Interface language',
  '统一管理京东和淘宝的购物记录，筛选穿搭商品。':'Manage JD and Taobao orders and identify wardrobe purchases.',
  '订单概览':'Order overview',
