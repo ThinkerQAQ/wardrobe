@@ -30,6 +30,28 @@ else
 fi
 test ! -e "$target/scripts/start-tunnel.sh"
 test ! -e "$target/scripts/Start-Wardrobe-Tunnel.ps1"
+if [[ "$osname" == windows ]]; then
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/smoke_native_windows.ps1 -InstallDir "$(cygpath -w "$target")"
+fi
+# First-run acceptance is separate from the installer: config and SQLite are created
+# on demand, without a Tunnel or browser extension.
+if [[ "$osname" != windows ]]; then
+  "$target/wardrobe" -open=false >"$sandbox/wardrobe.log" 2>&1 &
+  server_pid=$!
+  healthy=0
+  for i in $(seq 1 50); do
+    if curl -fsS --max-time 2 http://127.0.0.1:17936/api/health 2>/dev/null | grep -q '"version":"1.1.0"'; then
+      healthy=1
+      break
+    fi
+    sleep .2
+  done
+  test "$healthy" = 1 || { cat "$sandbox/wardrobe.log"; exit 1; }
+  kill -0 "$server_pid"
+  test -f "$target/Data/config.toml"
+  kill "$server_pid"
+  wait "$server_pid" || true
+fi
 if [[ "$osname" == darwin && -d "$target/Wardrobe-Maintenance.app" ]]; then
   maintenance="$(find "$target/Wardrobe-Maintenance.app/Contents/MacOS" -maxdepth 1 -type f | head -1)"
 else
