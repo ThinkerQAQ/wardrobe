@@ -37,7 +37,7 @@ jobs:
       - name: Collect dependency license texts
         shell: bash
         run: |
-          mkdir -p "$RUNNER_TEMP/wardrobe-stage/THIRD_PARTY_LICENSES" "$RUNNER_TEMP/tools"
+          mkdir -p "$RUNNER_TEMP/tools"
           GOBIN="$RUNNER_TEMP/tools" go install github.com/google/go-licenses/v2@v2.0.1
           collector="$RUNNER_TEMP/tools/go-licenses"
           if [ "$GOOS" = windows ]; then collector+=".exe"; fi
