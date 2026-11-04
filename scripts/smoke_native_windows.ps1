@@ -18,7 +18,7 @@ try {
     if ($proc.HasExited) { throw "Wardrobe process exited: $($proc.ExitCode)" }
     try {
       $health=Invoke-RestMethod -Uri 'http://127.0.0.1:17936/api/health' -TimeoutSec 2
-      if ($health.app -eq 'wardrobe' -and $health.version -eq '1.1.0' -and $health.status -eq 'ok') {
+      if ($health.app -eq 'wardrobe' -and $health.version -eq '1.1.1' -and $health.status -eq 'ok') {
         $healthy=$true
         break
       }

@@ -49,29 +49,92 @@
  <div id="ordersList" class="orderList"></div>
 </section>
 <section id="mcpPanel" class="mcpSettings" hidden aria-label="MCP 连接设置">
- <article class="mcpCard"><h3>本地 Tunnel 服务</h3><p class="meta">Wardrobe 的衣橱功能独立运行；Tunnel 仅用于可选的 ChatGPT 连接。</p>
- <p id="mcpConnectionState" class="mcpState" role="status" aria-live="polite">正在读取连接状态…</p>
- <div class="mcpFields">
-  <label> Tunnel ID <input id="mcpTunnelID" type="text" spellcheck="false" autocomplete="off" placeholder="tunnel_…" aria-label="Tunnel ID"></label>
-  <label> Runtime API Key <input id="mcpKey" type="password" spellcheck="false" autocomplete="new-password" placeholder="Runtime API Key" aria-label="Runtime API Key"></label>
- </div>
- <div class="mcpOptions">
-  <label><input id="mcpLoginStartup" type="checkbox"> 登录时自动启动 Tunnel 服务</label>
-  <label><input id="mcpAutoConnect" type="checkbox"> 启动后自动连接 Tunnel</label>
- </div>
- <div class="mcpButtons">
-  <button id="mcpSave" class="primary" type="button">保存</button>
-  <button id="mcpStart" type="button">启动</button><button id="mcpStop" type="button">停止</button>
-  <button id="mcpRestart" type="button">重启</button><button id="mcpConnect" type="button">连接</button><button id="mcpDisconnect" type="button">断开</button>
- </div>
- <p id="mcpMissingClient" class="meta" hidden>首次连接需要官方 Tunnel Client。<button id="mcpInstallClient" type="button">安装官方 Client</button></p>
- <p id="mcpSaveState" class="meta" role="status"></p><p id="mcpFeedback" class="meta" role="status" aria-live="polite"></p>
- </article>
- <article class="mcpCard"><h3>ChatGPT 插件</h3><p class="meta">先保存并启动 Tunnel，再在 ChatGPT 中添加 / 授权对应插件。Tunnel Ready 不代表插件已授权。</p>
- <p><a href="https://chatgpt.com/plugins" target="_blank" rel="noopener noreferrer">打开 ChatGPT 插件</a></p>
- <h4>本地 STDIO MCP</h4><p class="meta">不需要 Tunnel；把下面的配置添加到本机 MCP 客户端。</p>
- <pre id="mcpLocalSTDIO" class="mcpConfig" tabindex="0" title="点击复制配置" aria-label="本地 MCP STDIO 配置"></pre>
- </article>
+<section id="mcpConnectionSettings" class="mcp-setup">
+          <div class="mcp-workflow">
+            <div class="mcp-workflow-header">
+              <span>连接状态</span>
+              <span id="mcpConnectionStatus" class="mcp-status-chip" role="status" aria-live="polite" data-kind="idle">
+                <span class="mcp-status-dot" aria-hidden="true"></span>
+                <span id="mcpConnectionStatusText">正在检查…</span>
+              </span>
+            </div>
+            <section class="mcp-flow-section" aria-labelledby="mcpLocalTitle">
+              <div class="mcp-section-heading">
+                <span class="mcp-step" aria-hidden="true">01</span>
+                <div>
+                  <h3 id="mcpLocalTitle">本地 Tunnel 服务</h3>
+                  <p>保存连接配置后启动服务；服务运行时，重启可应用已保存的修改。</p>
+                </div>
+              </div>
+              <div class="mcp-flow-body">
+                <div class="mcp-field">
+                  <div class="mcp-field-heading">
+                    <label for="mcpTunnelID">Tunnel ID</label>
+                    <a class="mcp-help" href="https://platform.openai.com/settings/organization/tunnels" target="_blank" rel="noopener noreferrer" title="创建或管理 Tunnel" aria-label="创建或管理 Tunnel">?</a>
+                  </div>
+                  <input id="mcpTunnelID" name="wardrobe-tunnel-id" type="text" spellcheck="false" autocomplete="off" maxlength="80" readonly>
+                  <small id="mcpTunnelHint">尚未保存</small>
+                </div>
+                <div class="mcp-field">
+                  <div class="mcp-field-heading">
+                    <label for="mcpRuntimeKey">Runtime API Key</label>
+                    <a class="mcp-help" href="https://platform.openai.com/settings/organization/api-keys" target="_blank" rel="noopener noreferrer" title="创建 Runtime API Key" aria-label="创建 Runtime API Key">?</a>
+                  </div>
+                  <div class="mcp-key-input">
+                    <input id="mcpRuntimeKey" name="wardrobe-tunnel-key" type="password" spellcheck="false" autocomplete="new-password" maxlength="512" readonly>
+                    <button id="mcpKeyReveal" class="mcp-reveal" type="button" disabled aria-pressed="false" aria-label="显示输入的密钥" title="显示输入的密钥">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <small id="mcpRuntimeHint">尚未保存</small>
+                </div>
+                <label class="mcp-preference" for="mcpAutoStart">
+                  <input id="mcpAutoStart" type="checkbox" disabled>
+                  <span><strong>本地服务开机自启</strong><small>下次登录系统时启动。保存不会立即启动或停止当前服务。</small></span>
+                </label>
+                <small id="mcpStartupError" class="mcp-startup-error" role="status" aria-live="polite"></small>
+                <label class="mcp-preference mcp-auto-connect" for="mcpAutoConnect">
+                  <input id="mcpAutoConnect" type="checkbox" checked disabled>
+                  <span><strong>Tunnel 自动连接</strong><small>本地服务启动后自动连接 Tunnel，修改后重启当前服务生效。</small></span>
+                </label>
+                <div class="mcp-button-row">
+                  <button id="mcpSave" class="mcp-primary" type="button">保存</button>
+                  <button id="mcpConnect" class="mcp-secondary" type="button" disabled>启动服务</button>
+                  <button id="mcpRestart" class="mcp-secondary" type="button" disabled>重启服务</button>
+                </div>
+                <div class="mcp-tunnel-actions">
+                  <button id="mcpTunnelToggle" class="mcp-secondary" type="button" disabled>连接 Tunnel</button>
+                </div>
+                <p id="mcpConnectionMessage" class="mcp-message" role="status" aria-live="polite"></p>
+              </div>
+            </section>
+            <section class="mcp-flow-section mcp-plugin-panel" aria-labelledby="mcpPluginTitle">
+              <div class="mcp-section-heading">
+                <span class="mcp-step" aria-hidden="true">02</span>
+                <div>
+                  <h3 id="mcpPluginTitle">ChatGPT 插件</h3>
+                  <p id="mcpPluginDescription">本地 Tunnel 就绪后，在 ChatGPT 中创建并启用插件。授权结果以 ChatGPT 为准。</p>
+                </div>
+              </div>
+              <div class="mcp-flow-body">
+                <a class="mcp-plugin-link" href="https://chatgpt.com/plugins" target="_blank" rel="noopener noreferrer">
+                  打开 ChatGPT 插件设置
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 5h5v5M19 5l-9 9M18 13v5H5V6h5"/></svg>
+                </a>
+                <details class="mcp-setup-advanced">
+                  <summary>本地 MCP 客户端（STDIO）</summary>
+                  <p>本地 MCP 客户端无需 Tunnel ID 或 Runtime API Key。</p>
+                  <pre id="mcpLocalConfig" class="mcp-local-config"></pre>
+                  <button id="mcpCopyConfig" class="mcp-secondary" type="button">复制本地配置</button>
+                </details>
+              </div>
+            </section>
+          </div>
+          <p class="mcp-footer">配置保存在本机，已保存的 API Key 不会返回此页面。</p>
+        </section>
 </section>
 <section id="skillsPanel" class="skillLayout" hidden aria-label="Skill 编辑器">
  <aside class="skillSidebar"><h3>已安装的工作流</h3><p class="meta">内置模板与本地编辑版本</p><div id="skillList" class="skillList" role="navigation" aria-label="选择 Skill"></div></aside>
