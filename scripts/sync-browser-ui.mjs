@@ -7,7 +7,7 @@ import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const src=path.join(root,'web');
 const dst=path.join(root,'browser-extension/app');
-const files=['index.html','favicon.svg','style.css','runtime.js','locale.js','app.js','orders.js','extension-controls.js'];
+const files=['index.html','favicon.svg','style.css','runtime.js','locale.js','app.js','orders.js','extension-controls.js','mcp-connection.js'];
 const check=process.argv.includes('--check');
 if(!check)fs.mkdirSync(dst,{recursive:true});
 for(const file of files){

@@ -16,6 +16,7 @@ jobs:
       - run: bash scripts/audit-public.sh
       - run: go test ./...
       - run: go vet ./...
+      - run: python3 scripts/test_package_installer.py -v
       - name: Verify distributable dependency licenses
         run: |
           mkdir -p .build/tools
@@ -33,6 +34,7 @@ jobs:
       - run: node --check browser-extension/panel.js
       - run: node --check web/runtime.js
       - run: node --check web/locale.js
+      - run: node --check web/mcp-connection.js
       - run: node --check web/extension-controls.js
       - run: node scripts/sync-browser-ui.mjs --check
       - run: bash tests/install-extension.test.sh
@@ -40,12 +42,12 @@ jobs:
       - run: GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o /tmp/wardrobe.exe .
       - name: Linux installer test
         run: |
-          bash -n scripts/setup.sh scripts/start-local.sh scripts/start-tunnel.sh
+          bash -n scripts/setup.sh scripts/start-local.sh scripts/Open-Wardrobe.sh
           go build -o /tmp/wardrobe-linux .
           d=$(mktemp -d)
-          bash scripts/setup.sh --no-tunnel --no-start --non-interactive --binary /tmp/wardrobe-linux --install-dir "$d"
+          bash scripts/setup.sh --no-start --non-interactive --binary /tmp/wardrobe-linux --install-dir "$d"
           echo preserved > "$d/Data/keep.txt"
-          bash scripts/setup.sh --no-tunnel --no-start --non-interactive --binary /tmp/wardrobe-linux --install-dir "$d"
+          bash scripts/setup.sh --no-start --non-interactive --binary /tmp/wardrobe-linux --install-dir "$d"
           test "$(cat "$d/Data/keep.txt")" = preserved
           rm -rf "$d"
 
@@ -61,9 +63,9 @@ jobs:
         run: |
           go build -o "$env:RUNNER_TEMP\wardrobe.exe" .
           $dir = Join-Path $env:RUNNER_TEMP 'WardrobeSetupTest'
-          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Setup-Wardrobe.ps1 -InstallDir $dir -WardrobeBinary "$env:RUNNER_TEMP\wardrobe.exe" -NoTunnel -NoStart -NoAutostart -NonInteractive
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Setup-Wardrobe.ps1 -InstallDir $dir -WardrobeBinary "$env:RUNNER_TEMP\wardrobe.exe" -NoStart -NoAutostart -NonInteractive
           if ($LASTEXITCODE -ne 0) { throw 'Initial setup failed' }
           Set-Content (Join-Path $dir 'Data\keep.txt') 'untouched'
-          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Setup-Wardrobe.ps1 -InstallDir $dir -WardrobeBinary "$env:RUNNER_TEMP\wardrobe.exe" -NoTunnel -NoStart -NoAutostart -NonInteractive
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Setup-Wardrobe.ps1 -InstallDir $dir -WardrobeBinary "$env:RUNNER_TEMP\wardrobe.exe" -NoStart -NoAutostart -NonInteractive
           if ($LASTEXITCODE -ne 0) { throw 'Repeat setup failed' }
           if ((Get-Content (Join-Path $dir 'Data\keep.txt')) -ne 'untouched') { throw 'Installer replaced user data' }

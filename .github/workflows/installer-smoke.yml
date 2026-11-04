@@ -1,0 +1,87 @@
+name: Native installer acceptance
+on:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-smoke:
+    name: native installer (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-24.04, target: linux, host: linux, ext: run }
+          - { os: windows-2025, target: windows, host: windows, ext: exe }
+          - { os: macos-15-intel, target: darwin, host: mac, ext: dmg }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.0.0
+        with:
+          python-version: '3.12'
+      - name: Python packaging contract
+        shell: bash
+        run: python scripts/test_package_installer.py -v
+      - name: Verify shared version and stage native runtime
+        shell: bash
+        run: |
+          test "$(python -c 'import json;print(json.load(open("browser-extension/manifest.json"))["version"])')" = "$(cat VERSION)"
+          python scripts/stage_installer.py --os "${{ matrix.target }}" --arch amd64 --output "$RUNNER_TEMP/wardrobe-stage"
+      - name: Collect dependency license texts
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/tools"
+          GOBIN="$RUNNER_TEMP/tools" go install github.com/google/go-licenses/v2@v2.0.1
+          collector="$RUNNER_TEMP/tools/go-licenses"
+          if [ "$GOOS" = windows ]; then collector+=".exe"; fi
+          GOOS="$GOOS" GOARCH=amd64 CGO_ENABLED=0 "$collector" save . --ignore=wardrobe --save_path="$RUNNER_TEMP/wardrobe-stage/THIRD_PARTY_LICENSES"
+          GOOS="$GOOS" GOARCH=amd64 CGO_ENABLED=0 "$collector" report . --ignore=wardrobe > "$RUNNER_TEMP/wardrobe-stage/THIRD_PARTY_LICENSES/DEPENDENCIES.csv"
+          cp "$(go env GOROOT)/LICENSE" "$RUNNER_TEMP/wardrobe-stage/THIRD_PARTY_LICENSES/Go-LICENSE"
+        env:
+          GOOS: ${{ matrix.target }}
+      - name: Download pinned Qt Installer Framework
+        shell: bash
+        run: |
+          python -m pip install --disable-pip-version-check aqtinstall==3.3.0
+          python -m aqt install-tool -O "$RUNNER_TEMP/qtifw" "${{ matrix.host }}" desktop tools_ifw qt.tools.ifw.47
+      - name: Linux Qt runtime libraries
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xkb1 libxcb-util1 libxcb-shape0 libxcb-xinerama0 libxcb-cursor0
+      - name: Build native graphical installer
+        shell: bash
+        run: |
+          set -euo pipefail
+          bin="$(find "$RUNNER_TEMP/qtifw" -type f \( -name binarycreator -o -name binarycreator.exe \) | head -1)"
+          test -n "$bin"
+          mkdir -p "$RUNNER_TEMP/native-dist"
+          version="v$(cat VERSION)"
+          output="$RUNNER_TEMP/native-dist/Wardrobe-Setup-$version-${{ matrix.target }}-amd64.${{ matrix.ext }}"
+          python scripts/package_installer.py --stage "$RUNNER_TEMP/wardrobe-stage" --version "${version#v}" --os "${{ matrix.target }}" --binarycreator "$bin" --output "$output"
+          test -s "$output"
+      - name: Native install, uninstall and user-data protection
+        shell: bash
+        run: |
+          output="$RUNNER_TEMP/native-dist/Wardrobe-Setup-v$(cat VERSION)-${{ matrix.target }}-amd64.${{ matrix.ext }}"
+          bash scripts/smoke_installer.sh "$output" "${{ matrix.target }}"
+      - name: Windows native Qt wizard regression
+        if: matrix.target == 'windows'
+        shell: bash
+        run: |
+          output="$RUNNER_TEMP/native-dist/Wardrobe-Setup-v$(cat VERSION)-windows-amd64.exe"
+          python scripts/installer/smoke-windows.py --installer "$(cygpath -w "$output")" --workdir "$(cygpath -w "$RUNNER_TEMP/wardrobe-wizard-qa")"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: native-installer-${{ matrix.target }}-amd64
+          path: ${{ runner.temp }}/native-dist/*
+          if-no-files-found: error
+          retention-days: 7

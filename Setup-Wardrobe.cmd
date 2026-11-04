@@ -1,7 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-echo Wardrobe - Local Installer and ChatGPT MCP Setup
+echo Wardrobe - Local Installer
 echo.
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\Setup-Wardrobe.ps1" %*
 set "ret=%ERRORLEVEL%"

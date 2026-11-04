@@ -320,3 +320,240 @@ button.danger:hover{background:#fff2ef;border-color:#b76554}
 .offlineActions #startLocal{background:#345548;color:#fff}
 .extension-host .offlineActions{width:100%}
 .extension-host .offlineActions button{flex:1 1 auto}
+
+
+/* Reference layout: Reverfolio MCP connection settings, adapted for Wardrobe. */
+.mcpSettings{max-width:1200px;width:100%;margin:0 auto;min-width:0}
+/* MCP connection workflow ported from SyndiRelay #29. */
+#mcpConnectionSettings {
+  padding: 8px 0 14px;
+  color: #263449;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+}
+#mcpConnectionSettings *, #mcpConnectionSettings *::before, #mcpConnectionSettings *::after { box-sizing: border-box; }
+#mcpConnectionSettings .mcp-workflow {
+  background: #fff;
+  border: 1px solid #e0e5ed;
+  border-radius: 13px;
+  overflow: hidden;
+  box-shadow: 0 7px 25px rgba(37, 54, 82, .035);
+}
+#mcpConnectionSettings .mcp-workflow-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 22px;
+  min-height: 62px;
+  border-bottom: 1px solid #edf0f5;
+  font-size: 13px;
+  font-weight: 600;
+}
+#mcpConnectionSettings .mcp-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  max-width: 65%;
+  background: #f9fafc;
+  border: 1px solid #e2e7ef;
+  border-radius: 999px;
+  color: #67748a;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+#mcpConnectionSettings .mcp-status-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  background: #9ca7b8;
+  border-radius: 50%;
+}
+#mcpConnectionSettings .mcp-status-chip[data-kind="ready"] { background: #f4fbf7; border-color: #d2eadc; color: #18704e; }
+#mcpConnectionSettings .mcp-status-chip[data-kind="ready"] .mcp-status-dot { background: #20a16d; }
+#mcpConnectionSettings .mcp-status-chip[data-kind="pending"] { background: #fffbf2; border-color: #f0dfba; color: #906316; }
+#mcpConnectionSettings .mcp-status-chip[data-kind="pending"] .mcp-status-dot { background: #d09a30; }
+#mcpConnectionSettings .mcp-status-chip[data-kind="error"] { background: #fff6f6; border-color: #f2d4d6; color: #b43e47; }
+#mcpConnectionSettings .mcp-status-chip[data-kind="error"] .mcp-status-dot { background: #d45a63; }
+#mcpConnectionSettings .mcp-flow-section { padding: 24px 28px; min-width: 0; }
+#mcpConnectionSettings .mcp-flow-section + .mcp-flow-section { border-top: 1px solid #edf0f5; }
+#mcpConnectionSettings .mcp-plugin-panel { background: #fcfdff; }
+#mcpConnectionSettings .mcp-section-heading { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 20px; }
+#mcpConnectionSettings .mcp-step {
+  display: grid;
+  place-items: center;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #e5eaf2;
+  border-radius: 10px;
+  color: #576a85;
+  background: #f0f3f8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+#mcpConnectionSettings .mcp-section-heading h3 {
+  margin: 1px 0 5px;
+  font-size: 16px;
+  line-height: 1.35;
+  letter-spacing: -.015em;
+  color: #25364e;
+  font-weight: 650;
+}
+#mcpConnectionSettings .mcp-section-heading p { margin: 0; max-width: 580px; font-size: 12px; color: #748197; line-height: 1.6; }
+#mcpConnectionSettings .mcp-flow-body { margin-left: 48px; min-width: 0; }
+#mcpConnectionSettings .mcp-field + .mcp-field { margin-top: 18px; }
+#mcpConnectionSettings .mcp-field-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+#mcpConnectionSettings .mcp-field-heading label { color: #344054; font-size: 13px; font-weight: 600; }
+#mcpConnectionSettings .mcp-help {
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  border: 1px solid #bac5d5;
+  border-radius: 50%;
+  color: #73839b;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+}
+#mcpConnectionSettings .mcp-help:hover { border-color: #2563eb; color: #2563eb; }
+#mcpConnectionSettings .mcp-field input {
+  display: block;
+  width: 100%;
+  height: 43px;
+  min-height: 43px;
+  padding: 9px 12px;
+  border: 1px solid #cfd8e5;
+  border-radius: 8px;
+  background: #fff;
+  color: #24334c;
+  font: inherit;
+  font-size: 13px;
+  transition: border-color .15s, box-shadow .15s;
+}
+#mcpConnectionSettings .mcp-field input:focus { outline: none; border-color: #7b9cc9; box-shadow: 0 0 0 3px rgba(55, 111, 194, .08); }
+#mcpConnectionSettings .mcp-field input:disabled { background: #f8f9fb; opacity: 1; }
+#mcpConnectionSettings #mcpTunnelID { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+#mcpConnectionSettings .mcp-field small { display: block; margin-top: 6px; min-height: 17px; font-size: 11px; font-weight: 400; color: #8390a4; }
+#mcpConnectionSettings .mcp-key-input { position: relative; }
+#mcpConnectionSettings .mcp-key-input input { padding-right: 48px; }
+#mcpConnectionSettings .mcp-reveal {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  padding: 0;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #677891;
+}
+#mcpConnectionSettings .mcp-reveal:hover:not(:disabled) { background: #f0f3f8; }
+#mcpConnectionSettings .mcp-reveal:disabled { color: #b2bccb; background: transparent; opacity: 1; }
+#mcpConnectionSettings .mcp-preference {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 20px 0 0;
+  color: #344054;
+  cursor: pointer;
+}
+#mcpConnectionSettings .mcp-preference input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  flex: 0 0 18px;
+  padding: 0;
+  margin: 2px 0 0;
+  accent-color: var(--ui-primary, #2563eb);
+  opacity: 1;
+}
+#mcpConnectionSettings .mcp-preference strong { display: block; font-size: 13px; font-weight: 600; line-height: 1.5; }
+#mcpConnectionSettings .mcp-preference small { display: block; margin: 3px 0 0; max-width: 500px; color: #748197; font-size: 11px; font-weight: 400; line-height: 1.5; }
+#mcpConnectionSettings .mcp-button-row { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; margin-top: 22px; }
+#mcpConnectionSettings .mcp-button-row button,
+#mcpConnectionSettings .mcp-secondary {
+  width: auto;
+  min-width: 100px;
+  min-height: 36px;
+  padding: 8px 15px;
+  border: 1px solid #cfd8e5;
+  border-radius: 8px;
+  background: #fff;
+  color: #516078;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 550;
+  line-height: 1.35;
+  opacity: 1;
+  white-space: nowrap;
+}
+#mcpConnectionSettings .mcp-button-row .mcp-primary {
+  background: #25364e;
+  border-color: #25364e;
+  color: #fff;
+}
+#mcpConnectionSettings .mcp-button-row .mcp-primary:hover:not(:disabled) { background: #17263c; border-color: #17263c; }
+#mcpConnectionSettings .mcp-secondary:hover:not(:disabled) { background: #f5f7fb; }
+#mcpConnectionSettings .mcp-button-row button:disabled,
+#mcpConnectionSettings .mcp-secondary:disabled {
+  background: #eef1f6;
+  border-color: #eef1f6;
+  color: #98a5b8;
+  opacity: 1;
+  cursor: not-allowed;
+}
+#mcpConnectionSettings button:focus-visible,
+#mcpConnectionSettings a:focus-visible { outline: 3px solid #abc8f6; outline-offset: 2px; }
+#mcpConnectionSettings .mcp-message { min-height: 0; margin: 12px 0 0; font-size: 12px; color: #61718b; line-height: 1.5; overflow-wrap: anywhere; }
+#mcpConnectionSettings .mcp-message:empty { display: none; }
+#mcpConnectionSettings .mcp-message.error { color: #b43e47; }
+#mcpConnectionSettings .mcp-plugin-panel .mcp-section-heading { margin-bottom: 12px; }
+#mcpConnectionSettings .mcp-plugin-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 32px;
+  color: #315d96;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+}
+#mcpConnectionSettings .mcp-plugin-link:hover { text-decoration: underline; }
+#mcpConnectionSettings .mcp-setup-advanced { border-top: 1px solid #edf0f5; padding-top: 13px; margin-top: 17px; color: #718096; font-size: 12px; }
+#mcpConnectionSettings .mcp-setup-advanced > summary { cursor: pointer; font-size: 12px; color: #65758f; }
+#mcpConnectionSettings .mcp-setup-advanced p { margin: 10px 0 6px; }
+#mcpConnectionSettings .mcp-local-config { max-height: 180px; margin: 8px 0 10px; padding: 10px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid #e2e7ef; border-radius: 7px; background: #f8fafc; font: 11px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; color: #46566d; }
+#mcpConnectionSettings .mcp-footer { margin: 14px 6px 0; color: #8b96a7; text-align: center; font-size: 11px; }
+@media (max-width: 700px) {
+  #mcpConnectionSettings .mcp-flow-section { padding: 20px 16px; }
+  #mcpConnectionSettings .mcp-flow-body { margin-left: 0; }
+  #mcpConnectionSettings .mcp-section-heading { gap: 11px; }
+  #mcpConnectionSettings .mcp-workflow-header { padding: 13px 16px; }
+  #mcpConnectionSettings .mcp-button-row button { flex: 1 1 100px; }
+}
+
+#mcpConnectionSettings .mcp-auto-connect { margin-top: 12px; }
+#mcpConnectionSettings .mcp-tunnel-actions { margin-top: 12px; }
+#mcpConnectionSettings .mcp-tunnel-actions .mcp-secondary { width: auto; min-width: 100px; min-height: 36px; background: #fff; border: 1px solid #cfd8e5; }
+
+#mcpConnectionSettings .mcp-startup-error { display: block; margin: 6px 0 0 30px; font-size: 11px; color: #9b6435; }
+#mcpConnectionSettings .mcp-startup-error:empty { display: none; }
+
+/* Wardrobe global label/small defaults differ from Reverfolio. */
+#mcpConnectionSettings .mcp-preference{flex-direction:row}
+#mcpConnectionSettings small{letter-spacing:0}
+#mcpConnectionSettings .mcp-setup-advanced>summary{list-style:revert}

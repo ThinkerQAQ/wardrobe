@@ -31,3 +31,5 @@ Private/
 
 # Public, generated brand icons are safe to commit; private photos stay ignored.
 !browser-extension/icons/*.png
+
+.installer-smoke/

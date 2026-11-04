@@ -27,6 +27,33 @@ var bundledSkills embed.FS
 var bundledSkillReferences embed.FS
 
 func main() {
+	if len(os.Args) == 2 && (os.Args[1] == "--version" || os.Args[1] == "version") {
+		fmt.Println(appVersion)
+		return
+	}
+	if len(os.Args) >= 2 && os.Args[1] == "mcp" {
+		if err := SetMCPConfigPath(mcpConfigPath()); err != nil {
+			log.Fatal(err)
+		}
+		if err := runMCPManagement(os.Args[2:]); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+	if len(os.Args) >= 2 && os.Args[1] == "tunnel-run" {
+		fs := flag.NewFlagSet("tunnel-run", flag.ExitOnError)
+		path := fs.String("config", mcpConfigPath(), "TOML configuration file")
+		if err := fs.Parse(os.Args[2:]); err != nil {
+			log.Fatal(err)
+		}
+		if err := SetMCPConfigPath(*path); err != nil {
+			log.Fatal(err)
+		}
+		if err := RunTunnel(context.Background()); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 	if isNativeHostInvocation(os.Args[1:]) {
 		if err := runWardrobeNativeHost(os.Stdin, os.Stdout); err != nil {
 			log.Print(err)
@@ -49,6 +76,14 @@ func main() {
 	flag.Parse()
 	explicit := map[string]bool{}
 	flag.Visit(func(f *flag.Flag) { explicit[f.Name] = true })
+	if err := SetMCPConfigPath(*configPath); err != nil {
+		log.Fatal(err)
+	}
+	if !explicit["config"] {
+		if err := ensureDefaultConfig(*configPath); err != nil {
+			log.Fatal(err)
+		}
+	}
 	cfg, err := loadConfig(*configPath, explicit["config"])
 	if err != nil {
 		log.Fatal(err)
