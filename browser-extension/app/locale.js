@@ -5,6 +5,10 @@
 // never sent to a translation service.
 (function(root){
  const en={
+ "官方 Tunnel Client 已安装":"Official Tunnel Client installed",
+ "官方 Tunnel Client 尚未安装（按需下载）":"Official Tunnel Client not installed (download on demand)",
+ "官方 Tunnel Client 已下载并校验；不会自动启动服务。":"Official Tunnel Client downloaded and verified; service remains stopped.",
+ "安装官方 Tunnel Client":"Install official Tunnel Client",
  // Shared MCP connection translations from Reverfolio.
  "本地服务运行中 · Tunnel 未连接":"Local service running · Tunnel disconnected",
  "本地服务正在运行，但 Tunnel 未连接。点击「连接 Tunnel」，等待就绪后再到 ChatGPT 管理插件。":"The local service is running. Connect the Tunnel and wait until ready before managing the plugin in ChatGPT.",

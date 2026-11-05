@@ -547,6 +547,8 @@ button.danger:hover{background:#fff2ef;border-color:#b76554}
 }
 
 #mcpConnectionSettings .mcp-auto-connect { margin-top: 12px; }
+#mcpConnectionSettings .mcp-client-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+#mcpConnectionSettings .mcp-client-actions small { color: #748197; font-size: 11px; }
 #mcpConnectionSettings .mcp-tunnel-actions { margin-top: 12px; }
 #mcpConnectionSettings .mcp-tunnel-actions .mcp-secondary { width: auto; min-width: 100px; min-height: 36px; background: #fff; border: 1px solid #cfd8e5; }
 

@@ -56,6 +56,11 @@
   if(!$('mcpConnectionSettings'))return;
   const s=state.status,c=controls(s,form()),run=running(s);
   $('mcpSave').disabled=!c.canSave;
+  if($('mcpInstallClient')) {
+   $('mcpInstallClient').hidden=!!s.client_installed;
+   $('mcpInstallClient').disabled=state.busy||!!state.pending;
+  }
+  if($('mcpClientHint'))$('mcpClientHint').textContent=s.client_installed?t('官方 Tunnel Client 已安装'):t('官方 Tunnel Client 尚未安装（按需下载）');
   $('mcpConnect').disabled=run?!c.canStop:!c.canStart;
   $('mcpConnect').textContent=run?t('停止服务'):t('启动服务');
   $('mcpRestart').disabled=!c.canRestart;
@@ -157,6 +162,15 @@
  }
  async function action(action){
   if(state.busy||state.pending)return;
+  if(action==='install-client'){
+   state.busy=true;show();
+   try {
+    await sendMCP({action:'install-client'});
+    message(t('官方 Tunnel Client 已下载并校验；不会自动启动服务。'));
+   } catch(e){message(errorMessage(e),true);}
+   finally{state.busy=false;await refresh();}
+   return;
+  }
   const s=state.status,c=controls(s,form());
   if(action==='start'&&!c.canStart||action==='stop'&&!c.canStop||
      action==='restart'&&!c.canRestart)return;
@@ -251,6 +265,7 @@ async function autoChanged(){
   intendedInput($('mcpTunnelID'),state.editedID?state.draftID||'':state.status.tunnel_id||'');
   intendedInput($('mcpRuntimeKey'),state.editedKey?state.draftKey||'':'');
   $('mcpSave').addEventListener('click',()=>action('save'));
+  $('mcpInstallClient')?.addEventListener('click',()=>action('install-client'));
   $('mcpConnect').addEventListener('click',()=>action(running(state.status)?'stop':'start'));
   $('mcpRestart').addEventListener('click',()=>action('restart'));
   $('mcpAutoStart')?.addEventListener('change',autoChanged);

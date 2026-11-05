@@ -45,3 +45,13 @@ test('Wardrobe extension has the same native MCP panel and stylesheet',()=>{
     assert.equal(fs.readFileSync('web/'+name,'utf8'),fs.readFileSync('browser-extension/app/'+name,'utf8'));
   }
 });
+
+// On-demand client installation is independent of credentials and bundled installers.
+test('Tunnel Client exposes an independent verified on-demand download',()=>{
+  assert.match(html,/id="mcpInstallClient"/);
+  assert.match(html,/id="mcpClientHint"/);
+  assert.match(js,/if\(action==='install-client'\)/);
+  assert.match(js,/sendMCP\(\{action:'install-client'\}\)/);
+  assert.match(js,/mcpInstallClient'\)\.hidden=!!s\.client_installed/);
+  assert.match(locale,/"安装官方 Tunnel Client"/);
+});
