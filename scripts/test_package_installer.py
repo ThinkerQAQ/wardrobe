@@ -17,6 +17,9 @@ class InstallerTests(unittest.TestCase):
   for name in ("config.example.toml","README.md","README_ZH.md","LICENSE","THIRD_PARTY_NOTICES.md"):
    (src/name).write_text("test")
   (src/("wardrobe.exe" if osname=="windows" else "wardrobe")).write_bytes(b"stub")
+  if osname=="windows":
+   (src/"wardrobe-host.exe").write_bytes(b"native-host-stub")
+   (src/"Setup-Wardrobe.cmd").write_text("legacy")
   (src/"scripts").mkdir()
   (src/"scripts/Open-Wardrobe.ps1").write_text("test")
   (src/"scripts/Open-Wardrobe.sh").write_text("test")
@@ -32,6 +35,9 @@ class InstallerTests(unittest.TestCase):
     self.assertFalse((package/"Data").exists())
     self.assertFalse((package/"Private").exists())
     self.assertTrue((package/("wardrobe.exe" if osname=="windows" else "wardrobe")).exists())
+    self.assertFalse(list(package.rglob("*.ps1")))
+    self.assertFalse(list(package.rglob("*.cmd")))
+    self.assertFalse((package/"Setup-Wardrobe.cmd").exists())
     script=(dst/"packages/com.thinkerqaq.wardrobe/meta/installscript.qs").read_text()
     self.assertIn("Open-Wardrobe",script)
     if osname=="windows":

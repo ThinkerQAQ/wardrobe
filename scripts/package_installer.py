@@ -14,7 +14,7 @@ ROOT=pathlib.Path(__file__).resolve().parent.parent
 ASSETS=ROOT/"scripts"/"installer"
 PAYLOAD=("wardrobe.exe","wardrobe-host.exe","wardrobe","browser-extension","brand","config.example.toml",
          "README.md","README_ZH.md","LICENSE","THIRD_PARTY_NOTICES.md","THIRD_PARTY_LICENSES",
-         "scripts","Setup-Wardrobe.cmd")
+         "scripts")
 EXCLUDED={"data","private","backups",".git","runtime.env","runtime-key.dpapi","config.toml"}
 def xml(path,tag,entries):
     node=ET.Element(tag)
@@ -28,7 +28,9 @@ def prepare(stage, out, version, target):
     if manifest.is_file() and json.loads(manifest.read_text())["version"]!=version:
         raise ValueError("extension and installer version differ")
     exe="wardrobe.exe" if target=="windows" else "wardrobe"
-    for name in (exe,"config.example.toml","LICENSE","browser-extension/manifest.json"):
+    required=(exe,"config.example.toml","LICENSE","browser-extension/manifest.json")
+    if target=="windows": required+=("wardrobe-host.exe",)
+    for name in required:
         if not (stage/name).is_file():raise ValueError("stage missing "+name)
     for path in stage.rglob("*"):
         if path.is_symlink():raise ValueError("stage contains a symlink")
@@ -42,8 +44,13 @@ def prepare(stage, out, version, target):
     conf.mkdir(parents=True);meta.mkdir(parents=True);data.mkdir(parents=True)
     for name in PAYLOAD:
         src=stage/name
-        if src.is_dir():shutil.copytree(src,data/name)
+        if src.is_dir():
+            ignore=shutil.ignore_patterns("*.ps1","*.cmd","*.vbs") if name=="scripts" else None
+            shutil.copytree(src,data/name,ignore=ignore)
         elif src.is_file():shutil.copy2(src,data/name)
+    for path in data.rglob("*"):
+        if path.is_file() and path.suffix.lower() in (".ps1",".cmd",".vbs"):
+            raise ValueError("legacy Windows launcher in native installer: "+str(path))
     for name in ("controller.qs","style.qss"):
         shutil.copy2(ASSETS/name,conf/name)
     for name in ("first-run.ui",):
