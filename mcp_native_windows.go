@@ -98,40 +98,51 @@ func mcpSameProcess(pid int, wantedExe string, startedAt uint64) bool {
 	current := uint64(created.HighDateTime)<<32 | uint64(created.LowDateTime)
 	return current == startedAt
 }
+
+// mcpPSQuote protects dynamic paths when passing a script to PowerShell.
+func mcpPSQuote(value string) string { return "'" + strings.ReplaceAll(value, "'", "''") + "'" }
+
+// mcpAutoManage changes only this application's opt-in user logon task. The
+// runtime's on-demand Native Messaging launch path works independently.
 func mcpAutoManage(action string, executable string) (bool, error) {
 	const task = "Wardrobe-Tunnel"
-	runner := "\"" + executable + "\" tunnel-run --config \"" + mcpConfigPath() + "\""
-	// The scheduled task belongs to the current user, never SYSTEM.
-	lookup := exec.Command("schtasks.exe", "/Query", "/TN", task, "/XML")
-	mcpHideProcess(lookup)
-	output, lookupErr := lookup.Output()
-	exists := lookupErr == nil
-	owned := exists && strings.Contains(strings.ToLower(string(output)), strings.ToLower(filepath.Clean(executable)))
-	if exists && !owned {
-		return false, errors.New("another installation owns the Tunnel task")
-	}
+	executable = filepath.Clean(executable)
+	runner := "& " + mcpPSQuote(executable) + " tunnel-run; exit $LASTEXITCODE"
+	runnerArgs := "-NoProfile -NonInteractive -WindowStyle Hidden -Command \"" + runner + "\""
+	quotedTask := mcpPSQuote(task)
+	// Check ownership before overwriting or removing an existing task. Accept
+	// both the old schtasks-created direct action and the new hidden wrapper.
+	script := "$ErrorActionPreference='Stop'; " +
+		"$t=Get-ScheduledTask -TaskPath '\\' -TaskName " + quotedTask + " -ErrorAction SilentlyContinue; " +
+		"if($null -ne $t) { $a=$t.Actions[0]; " +
+		"$owned=($t.Actions.Count -eq 1) -and (" +
+		"($a.Execute -ieq " + mcpPSQuote(executable) + ") -or " +
+		"(([IO.Path]::GetFileName($a.Execute) -ieq 'powershell.exe') -and " +
+		"($a.Arguments.IndexOf(" + mcpPSQuote(executable) + ",[StringComparison]::OrdinalIgnoreCase) -ge 0))" +
+		"); if(-not $owned){throw 'another installation owns the Tunnel task'} }; "
 	switch action {
 	case "status":
-		return exists, nil
+		script += "if($null -ne $t -and $t.Settings.Enabled){'true'}else{'false'}"
 	case "enable":
-		cmd := exec.Command("schtasks.exe", "/Create", "/F", "/TN", task, "/SC", "ONLOGON", "/TR", runner, "/RL", "LIMITED")
-		mcpHideProcess(cmd)
-		if err := cmd.Run(); err != nil {
-			return false, errors.New("unable to enable Tunnel at login")
-		}
-		return true, nil
+		script += "$user=[Security.Principal.WindowsIdentity]::GetCurrent().Name; " +
+			"$a=New-ScheduledTaskAction -Execute 'powershell.exe' -Argument " + mcpPSQuote(runnerArgs) + "; " +
+			"$p=New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited; " +
+			"$trigger=New-ScheduledTaskTrigger -AtLogOn -User $user; " +
+			"$settings=New-ScheduledTaskSettingsSet -ExecutionTimeLimit ([TimeSpan]::Zero) -MultipleInstances IgnoreNew -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries; " +
+			"Register-ScheduledTask -TaskName " + quotedTask + " -Action $a -Principal $p -Trigger $trigger -Settings $settings -Force -ErrorAction Stop | Out-Null; 'true'"
 	case "disable":
-		if !exists {
-			return false, nil
-		}
-		cmd := exec.Command("schtasks.exe", "/Delete", "/F", "/TN", task)
-		mcpHideProcess(cmd)
-		if err := cmd.Run(); err != nil {
-			return false, errors.New("unable to disable Tunnel at login")
-		}
-		return false, nil
+		script += "if($null -ne $t){Unregister-ScheduledTask -TaskName " + quotedTask + " -Confirm:$false -ErrorAction Stop}; 'false'"
+	default:
+		return false, errors.New("invalid auto-start action")
 	}
-	return false, errors.New("invalid auto-start action")
+	cmd := exec.Command("powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script)
+	mcpHideProcess(cmd)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		// Preserve the actual Windows diagnostic rather than masking Access denied.
+		return false, fmt.Errorf("Tunnel login startup %s: %w: %s", action, err, strings.TrimSpace(string(output)))
+	}
+	return strings.EqualFold(strings.TrimSpace(string(output)), "true"), nil
 }
 func mcpExeBase(executable string) string { return filepath.Base(executable) }
 

@@ -13,15 +13,9 @@ Component.prototype.finishFirstRun = function() {
     var target = installer.value("TargetDir");
     console.log("WARDROBE_FINISH_OPTIONS");
     if ("__PLATFORM__" == "windows") {
-        var powershell = installer.environmentVariable("SystemRoot") + "/System32/WindowsPowerShell/v1.0/powershell.exe";
-        if (form.openAppCheckBox.checked) {
-            installer.executeDetached(powershell, ["-NoProfile", "-ExecutionPolicy", "Bypass",
-                "-WindowStyle", "Hidden", "-File", installer.toNativeSeparators(target + "/scripts/Open-Wardrobe.ps1")], target);
-        }
-        if (form.openExtensionCheckBox.checked) {
-            installer.executeDetached(powershell, ["-NoProfile", "-ExecutionPolicy", "Bypass",
-                "-WindowStyle", "Hidden", "-File", installer.toNativeSeparators(target + "/scripts/Guide-Wardrobe-Extension.ps1")], target);
-        }
+        var launcher = installer.toNativeSeparators(target + "/wardrobe-host.exe");
+        if (form.openAppCheckBox.checked) installer.executeDetached(launcher, ["--open-ui"], target);
+        if (form.openExtensionCheckBox.checked) installer.executeDetached(launcher, ["--guide-extension"], target);
     } else {
         if (form.openAppCheckBox.checked) {
             installer.executeDetached("/bin/bash", [target + "/scripts/Open-Wardrobe.sh"], target);
