@@ -12,30 +12,31 @@ Wardrobe 是一款本地衣橱与穿搭管理应用。你可以导入订单文�
 
 ### 2.1. Install · 安装
 
-从 [Wardrobe Releases](https://github.com/ThinkerQAQ/wardrobe/releases) 下载对应安装包。正常使用不需要安装 Go 或 Node.js。
+从 [最新 Release](https://github.com/ThinkerQAQ/wardrobe/releases/latest) 下载与你的系统对应的安装包。正常使用不需要安装 Go 或 Node.js。
 
 #### Graphical Interface · 图形界面
 
 | 平台 | 原生安装包 | 安装方式 |
 | --- | --- | --- |
-| Windows（x64） | `Wardrobe-Setup-v1.1.4-windows-amd64.exe` | 运行安装向导、选择目录，完成后勾选 **Open Wardrobe**。 |
-| Linux（x64） | `Wardrobe-Setup-v1.1.4-linux-amd64.run` | 赋予执行权限并运行安装向导，完成后打开 Wardrobe。 |
-| macOS（Intel） | `Wardrobe-Setup-v1.1.4-darwin-amd64.dmg` | 打开 DMG 并运行安装向导，再打开 Wardrobe。 |
+| Windows（x64） | Windows 图形安装包（`.exe`） | 运行安装向导、选择目录，完成后勾选 **Open Wardrobe**。 |
+| Linux（x64） | Linux 图形安装包（`.run`） | 赋予执行权限并运行安装向导，完成后打开 Wardrobe。 |
+| macOS（Intel） | macOS 磁盘映像（`.dmg`） | 打开 DMG 并运行安装向导，再打开 Wardrobe。 |
 
-只有以上对应文件**实际出现在 Release 附件中**，该平台才算提供原生安装器。其他平台可使用已有的便携包。升级时选择原安装目录，保留 `Data/` 和 `Private/`；如果必须先卸载，使用 Wardrobe-Maintenance 移除旧程序并保留数据，再安装到原目录。
+只有**最新 Release 中实际提供了该平台的安装器**，才算支持原生图形安装。其他平台可使用已有的便携包。升级时选择原安装目录，保留 `Data/` 和 `Private/`；如果必须先卸载，使用 Wardrobe-Maintenance 移除旧程序并保留数据，再安装到原目录。
 
 #### Command Line · 命令行
 
 原生安装器同时支持 Qt Installer Framework 无人值守参数，与图形安装使用**同一套安装逻辑**：
 
 ```powershell
-# Windows
-.\Wardrobe-Setup-v1.1.4-windows-amd64.exe --accept-licenses --default-answer --confirm-command install
+# Windows：将下面的示例文件名换成下载的安装包文件名。
+& ".\downloaded-installer.exe" --accept-licenses --default-answer --confirm-command install
 ```
 
 ```bash
-# Linux：先赋予执行权限；macOS 在已挂载的 DMG 中运行安装器
-./Wardrobe-Setup-v1.1.4-linux-amd64.run --accept-licenses --default-answer --confirm-command install
+# Linux：将示例文件名换成下载的安装包文件名，并先赋予执行权限。
+# macOS：在已挂载的 DMG 中运行安装器。
+./downloaded-installer.run --accept-licenses --default-answer --confirm-command install
 ```
 
 自动化部署前以对应下载文件的 `--help` 参数说明为准。便携版从同一 Release 下载 `wardrobe-<os>-<arch>` 压缩包，解压后运行 `wardrobe` 或 `wardrobe.exe`。如果需要便携版安装脚本：Linux/macOS 运行 `bash scripts/setup.sh --non-interactive --no-start`，Windows 运行 `scripts/Setup-Wardrobe.ps1 -NonInteractive -NoStart`。
