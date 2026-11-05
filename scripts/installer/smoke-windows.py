@@ -93,7 +93,9 @@ def main():
         for path,data in state.items():
             assert path.read_bytes()==data,"State overwritten: "+str(path)
         assert (target/"wardrobe.exe").is_file()
-        assert (target/"scripts/Open-Wardrobe.ps1").is_file()
+        assert (target/"wardrobe-host.exe").is_file()
+        assert not list(target.rglob("*.ps1")), "native installer must not carry PowerShell"
+        assert not list(target.rglob("*.cmd")), "native installer must not carry legacy CMD launchers"
         print("QA_GUI_PASS",flush=True)
     finally:
         if (target/"Wardrobe-Maintenance.exe").is_file():
