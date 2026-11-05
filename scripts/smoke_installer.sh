@@ -40,7 +40,7 @@ if [[ "$osname" != windows ]]; then
   server_pid=$!
   healthy=0
   for i in $(seq 1 50); do
-    if curl -fsS --max-time 2 http://127.0.0.1:17936/api/health 2>/dev/null | grep -q '"version":"1.1.3"'; then
+    if curl -fsS --max-time 2 http://127.0.0.1:17936/api/health 2>/dev/null | grep -q '"version":"1.1.4"'; then
       healthy=1
       break
     fi

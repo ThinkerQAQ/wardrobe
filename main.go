@@ -27,6 +27,13 @@ var bundledSkills embed.FS
 var bundledSkillReferences embed.FS
 
 func main() {
+	if len(os.Args) == 2 && (os.Args[1] == "--open-ui" || os.Args[1] == "--guide-extension") {
+		if err := openNativeGUI(os.Args[1]); err != nil {
+			notifyGUIError(err)
+			os.Exit(1)
+		}
+		return
+	}
 	if len(os.Args) == 2 && (os.Args[1] == "--version" || os.Args[1] == "version") {
 		fmt.Println(appVersion)
 		return

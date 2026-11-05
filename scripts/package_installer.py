@@ -91,7 +91,7 @@ Component.prototype.createOperations = function() {
         # Rebind legacy Native Messaging manifests after files are extracted.
         # The GUI-subsystem host exits immediately and never opens a CMD window.
         script+='    component.addOperation("Execute", "@TargetDir@/wardrobe-host.exe", "--repair-native-host");\n'
-        script+='    component.addOperation("CreateShortcut", installer.environmentVariable("SystemRoot") + "/System32/WindowsPowerShell/v1.0/powershell.exe", "@UserStartMenuProgramsPath@/Wardrobe/Wardrobe.lnk", "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \\"@TargetDir@/scripts/Open-Wardrobe.ps1\\"", "workingDirectory=@TargetDir@");\n'
+        script+='    component.addOperation("CreateShortcut", "@TargetDir@/wardrobe-host.exe", "@UserStartMenuProgramsPath@/Wardrobe/Wardrobe.lnk", "--open-ui", "workingDirectory=@TargetDir@");\n'
     elif target=="linux":
         script+='    component.addOperation("CreateDesktopEntry", "wardrobe.desktop", "Type=Application\\nName=Wardrobe\\nExec=/bin/bash \\"@TargetDir@/scripts/Open-Wardrobe.sh\\"\\nTerminal=false\\nCategories=Utility;");\n'
     else:

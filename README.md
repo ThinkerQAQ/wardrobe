@@ -18,9 +18,9 @@ Download from [Releases](https://github.com/ThinkerQAQ/wardrobe/releases). No Go
 
 | Platform | Native installer | Steps |
 | --- | --- | --- |
-| Windows (x64) | `Wardrobe-Setup-v1.1.3-windows-amd64.exe` | Open installer, choose a folder, select **Open Wardrobe** on completion. |
-| Linux (x64) | `Wardrobe-Setup-v1.1.3-linux-amd64.run` | Make executable, open installer, launch Wardrobe. |
-| macOS (Intel) | `Wardrobe-Setup-v1.1.3-darwin-amd64.dmg` | Open DMG, run installer and launch Wardrobe. |
+| Windows (x64) | `Wardrobe-Setup-v1.1.4-windows-amd64.exe` | Open installer, choose a folder, select **Open Wardrobe** on completion. |
+| Linux (x64) | `Wardrobe-Setup-v1.1.4-linux-amd64.run` | Make executable, open installer, launch Wardrobe. |
+| macOS (Intel) | `Wardrobe-Setup-v1.1.4-darwin-amd64.dmg` | Open DMG, run installer and launch Wardrobe. |
 
 Native installers are available **only where those exact files appear in the Release**. For other platforms, use an available portable archive. When upgrading, keep the original installation directory and preserve `Data/` and `Private/`. If necessary, uninstall old program files with Wardrobe-Maintenance first, retaining data.
 
@@ -30,12 +30,12 @@ The native installer supports Qt Installer Framework unattended installation usi
 
 ```powershell
 # Windows
-.\Wardrobe-Setup-v1.1.3-windows-amd64.exe --accept-licenses --default-answer --confirm-command install
+.\Wardrobe-Setup-v1.1.4-windows-amd64.exe --accept-licenses --default-answer --confirm-command install
 ```
 
 ```bash
 # Linux; grant execute permission first. macOS: run installer inside mounted DMG.
-./Wardrobe-Setup-v1.1.3-linux-amd64.run --accept-licenses --default-answer --confirm-command install
+./Wardrobe-Setup-v1.1.4-linux-amd64.run --accept-licenses --default-answer --confirm-command install
 ```
 
 Check `--help` on your downloaded installer before automated deployment. For a portable installation, extract the `wardrobe-<os>-<arch>` archive and run `wardrobe` (or `wardrobe.exe`). Optional portable setup commands are `bash scripts/setup.sh --non-interactive --no-start` (Linux/macOS) and `scripts/Setup-Wardrobe.ps1 -NonInteractive -NoStart` (Windows).
