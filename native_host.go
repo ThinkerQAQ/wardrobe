@@ -174,6 +174,48 @@ func buildNativeManifest(executable, extensionID string, old []byte) (nativeHost
 	sort.Strings(values)
 	return nativeHostManifest{Name: nativeHostName, Description: "Wardrobe local service launcher", Path: executable, Type: "stdio", AllowedOrigins: values}, nil
 }
+
+// repairNativeHostExtensionID reads the first trusted extension origin from an
+// existing manifest. Repair never adds new extension permissions implicitly.
+func repairNativeHostExtensionID(data []byte) (string, error) {
+	var previous nativeHostManifest
+	if err := json.Unmarshal(data, &previous); err != nil || previous.Name != nativeHostName || previous.Type != "stdio" {
+		return "", errors.New("cannot repair unrecognized Native Messaging manifest")
+	}
+	for _, origin := range previous.AllowedOrigins {
+		if !strings.HasPrefix(origin, "chrome-extension://") || !strings.HasSuffix(origin, "/") {
+			continue
+		}
+		id := strings.TrimSuffix(strings.TrimPrefix(origin, "chrome-extension://"), "/")
+		if validExtensionID.MatchString(id) {
+			return id, nil
+		}
+	}
+	return "", errors.New("no valid extension origin in Native Messaging manifest")
+}
+
+// Keep existing Data and origin permissions, but rebind a stale host executable
+// after an installer upgrade (e.g. wardrobe-native-v1.0.3.exe -> wardrobe-host.exe).
+// Fresh installs with no registered extension are intentionally a no-op.
+func repairWardrobeNativeHost() error {
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	previous, err := os.ReadFile(nativeManifestPath(exe))
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	id, err := repairNativeHostExtensionID(previous)
+	if err != nil {
+		return err
+	}
+	return registerWardrobeNativeHost(id)
+}
+
 func registerWardrobeNativeHost(extensionID string) error {
 	exe, err := os.Executable()
 	if err != nil {

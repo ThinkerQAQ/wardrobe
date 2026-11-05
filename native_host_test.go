@@ -30,6 +30,20 @@ func TestNativeHostManifestAllowlist(t *testing.T) {
 		}
 	}
 }
+func TestNativeHostRepairPreservesOrigin(t *testing.T) {
+	id := strings.Repeat("a", 32)
+	old := nativeHostManifest{Name: nativeHostName, Type: "stdio", Path: `C:\old\wardrobe-native-v1.0.3.exe`, AllowedOrigins: []string{"chrome-extension://" + id + "/"}}
+	bytes, _ := json.Marshal(old)
+	got, err := repairNativeHostExtensionID(bytes)
+	if err != nil || got != id {
+		t.Fatalf("repair id=%q err=%v", got, err)
+	}
+	for _, bad := range [][]byte{[]byte(`{}`), []byte(`{"name":"foreign","type":"stdio"}`), []byte(`{"name":"com.thinkerqaq.wardrobe","type":"stdio","allowed_origins":["https://evil/"]}`)} {
+		if _, err := repairNativeHostExtensionID(bad); err == nil {
+			t.Fatalf("accepted %s", bad)
+		}
+	}
+}
 func TestNativeHostMessageFraming(t *testing.T) {
 	var buf bytes.Buffer
 	if err := writeNativeMessage(&buf, map[string]any{"command": "status"}); err != nil {

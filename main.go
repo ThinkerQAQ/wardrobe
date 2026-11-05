@@ -60,6 +60,12 @@ func main() {
 		}
 		return
 	}
+	if len(os.Args) == 2 && os.Args[1] == "--repair-native-host" {
+		if err := repairWardrobeNativeHost(); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 	if len(os.Args) == 3 && os.Args[1] == "--register-native-host" {
 		if err := registerWardrobeNativeHost(os.Args[2]); err != nil {
 			log.Fatal(err)

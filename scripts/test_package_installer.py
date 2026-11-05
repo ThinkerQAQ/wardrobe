@@ -10,7 +10,7 @@ class InstallerTests(unittest.TestCase):
  def fixture(self,root,osname):
   src=root/"stage"
   (src/"browser-extension/icons").mkdir(parents=True)
-  (src/"browser-extension/manifest.json").write_text('{"version":"1.1.2"}')
+  (src/"browser-extension/manifest.json").write_text('{"version":"1.1.3"}')
   (src/"browser-extension/icons/icon128.png").write_bytes(b"fake-icon")
   (src/"brand").mkdir()
   (src/"brand/wardrobe.ico").write_bytes(b"fake-ico")
@@ -25,7 +25,7 @@ class InstallerTests(unittest.TestCase):
   for osname in ("windows","linux","darwin"):
    with self.subTest(osname=osname),tempfile.TemporaryDirectory() as td:
     root=Path(td);stage=self.fixture(root,osname);dst=root/"installer"
-    p.prepare(stage,dst,"1.1.2",osname)
+    p.prepare(stage,dst,"1.1.3",osname)
     cfg=ET.parse(dst/"config/config.xml").getroot()
     self.assertEqual(cfg.findtext("RemoveTargetDir"),"false")
     package=dst/"packages/com.thinkerqaq.wardrobe/data"
@@ -34,6 +34,9 @@ class InstallerTests(unittest.TestCase):
     self.assertTrue((package/("wardrobe.exe" if osname=="windows" else "wardrobe")).exists())
     script=(dst/"packages/com.thinkerqaq.wardrobe/meta/installscript.qs").read_text()
     self.assertIn("Open-Wardrobe",script)
+    if osname=="windows":
+     self.assertIn('--repair-native-host',script)
+     self.assertIn('wardrobe-host.exe',script)
     if osname=="darwin":self.assertTrue((package/"Wardrobe.app/Contents/MacOS/Wardrobe").exists())
     if osname=="linux":self.assertIn("CreateDesktopEntry",script)
  def test_rejects_data_and_secrets(self):
@@ -41,7 +44,7 @@ class InstallerTests(unittest.TestCase):
    with self.subTest(file=file),tempfile.TemporaryDirectory() as td:
     root=Path(td);src=self.fixture(root,"windows");f=src/file
     f.parent.mkdir(parents=True,exist_ok=True);f.write_text("secret")
-    with self.assertRaises(ValueError):p.prepare(src,root/"installer","1.1.2","windows")
+    with self.assertRaises(ValueError):p.prepare(src,root/"installer","1.1.3","windows")
  def test_windows_console_binary_becomes_gui_without_touching_payload(self):
   with tempfile.TemporaryDirectory() as td:
    exe=Path(td)/"Wardrobe-Setup.exe"

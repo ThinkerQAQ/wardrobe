@@ -86,6 +86,17 @@ try {
     try { Move-Item -LiteralPath ($targetExe+'.new') -Destination $targetExe -Force }
     catch { Remove-Item -LiteralPath ($targetExe+'.new') -ErrorAction SilentlyContinue;throw 'Cannot replace Wardrobe while it is running; close the old Wardrobe instance and retry' }
   }
+  # The GUI-subsystem Native Host must be upgraded alongside wardrobe.exe.
+  $sourceHost = Join-Path $packageRoot 'wardrobe-host.exe'
+  $targetHost = Join-Path $InstallDir 'wardrobe-host.exe'
+  if (Test-Path -LiteralPath $sourceHost -PathType Leaf) {
+    if ([IO.Path]::GetFullPath($sourceHost) -ne [IO.Path]::GetFullPath($targetHost)) {
+      Copy-Item -LiteralPath $sourceHost -Destination $targetHost -Force
+    }
+  }
+  # Rebind the old manifest without changing existing extension allowlists.
+  & $targetExe --repair-native-host
+  if ($LASTEXITCODE -ne 0) { throw 'Native Messaging repair failed' }
   $config = Join-Path $dataDir 'config.toml'
   if (!(Test-Path $config)) {
     $example = Join-Path $packageRoot 'config.example.toml'
