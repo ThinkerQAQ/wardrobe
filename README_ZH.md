@@ -28,9 +28,9 @@ Wardrobe 是一款本地衣橱与穿搭管理应用。你可以导入订单文�
 
 原生安装器同时支持 Qt Installer Framework 无人值守参数，与图形安装使用**同一套安装逻辑**：
 
-```powershell
+```cmd
 # Windows：将下面的示例文件名换成下载的安装包文件名。
-& ".\downloaded-installer.exe" --accept-licenses --default-answer --confirm-command install
+downloaded-installer.exe --accept-licenses --default-answer --confirm-command install
 ```
 
 ```bash
@@ -39,7 +39,7 @@ Wardrobe 是一款本地衣橱与穿搭管理应用。你可以导入订单文�
 ./downloaded-installer.run --accept-licenses --default-answer --confirm-command install
 ```
 
-自动化部署前以对应下载文件的 `--help` 参数说明为准。便携版从同一 Release 下载 `wardrobe-<os>-<arch>` 压缩包，解压后运行 `wardrobe` 或 `wardrobe.exe`。如果需要便携版安装脚本：Linux/macOS 运行 `bash scripts/setup.sh --non-interactive --no-start`，Windows 运行 `scripts/Setup-Wardrobe.ps1 -NonInteractive -NoStart`。
+自动化部署前使用原生安装器的 `--help` 查看参数。便携包解压后直接运行：Windows 为 `wardrobe.exe`，Linux/macOS 为 `./wardrobe`；无需安装脚本、PowerShell、Bash 或 Python。需要创建系统快捷方式及完整安装时，使用上方的原生安装器命令。
 
 ### 2.2. Configuration · 配置
 

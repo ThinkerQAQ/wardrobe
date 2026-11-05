@@ -19,10 +19,7 @@ class InstallerTests(unittest.TestCase):
   (src/("wardrobe.exe" if osname=="windows" else "wardrobe")).write_bytes(b"stub")
   if osname=="windows":
    (src/"wardrobe-host.exe").write_bytes(b"native-host-stub")
-   (src/"Setup-Wardrobe.cmd").write_text("legacy")
-  (src/"scripts").mkdir()
-  (src/"scripts/Open-Wardrobe.ps1").write_text("test")
-  (src/"scripts/Open-Wardrobe.sh").write_text("test")
+  if osname=="darwin": (src/"wardrobe-open").write_bytes(b"native-macos-launcher")
   return src
  def test_platform_layout_and_unmanaged_data(self):
   for osname in ("windows","linux","darwin"):
@@ -39,14 +36,15 @@ class InstallerTests(unittest.TestCase):
     self.assertFalse(list(package.rglob("*.cmd")))
     self.assertFalse((package/"Setup-Wardrobe.cmd").exists())
     script=(dst/"packages/com.thinkerqaq.wardrobe/meta/installscript.qs").read_text()
-    self.assertIn("Open-Wardrobe",script)
+    self.assertNotIn("/bin/bash",script)
+    self.assertFalse(list(package.rglob("*.sh")))
     if osname=="windows":
      self.assertIn('--repair-native-host',script)
      self.assertIn('wardrobe-host.exe',script)
      self.assertIn('--open-ui',script)
      self.assertIn('--guide-extension',script)
      self.assertNotIn('WindowsPowerShell',script)
-    if osname=="darwin":self.assertTrue((package/"Wardrobe.app/Contents/MacOS/Wardrobe").exists())
+    if osname=="darwin":self.assertEqual((package/"Wardrobe.app/Contents/MacOS/Wardrobe").read_bytes(),b"native-macos-launcher")
     if osname=="linux":self.assertIn("CreateDesktopEntry",script)
  def test_rejects_data_and_secrets(self):
   for file in ("Data/something.db","Private/key","config.toml","scripts/runtime.env","browser-extension/admin.key"):

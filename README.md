@@ -28,9 +28,9 @@ Native installers are available **only when the latest Release includes an insta
 
 The native installer supports Qt Installer Framework unattended installation using the **same package and install logic**:
 
-```powershell
+```cmd
 # Windows: substitute the downloaded installer filename.
-& ".\downloaded-installer.exe" --accept-licenses --default-answer --confirm-command install
+downloaded-installer.exe --accept-licenses --default-answer --confirm-command install
 ```
 
 ```bash
@@ -39,7 +39,7 @@ The native installer supports Qt Installer Framework unattended installation usi
 ./downloaded-installer.run --accept-licenses --default-answer --confirm-command install
 ```
 
-Check `--help` on your downloaded installer before automated deployment. For a portable installation, extract the `wardrobe-<os>-<arch>` archive and run `wardrobe` (or `wardrobe.exe`). Optional portable setup commands are `bash scripts/setup.sh --non-interactive --no-start` (Linux/macOS) and `scripts/Setup-Wardrobe.ps1 -NonInteractive -NoStart` (Windows).
+Use `--help` on the native installer before automation. Extract a portable archive and directly run `wardrobe.exe` (Windows) or `./wardrobe` (Linux/macOS); no PowerShell, Bash, Python, or installation script is required. For a complete unattended installation, use the native installer CLI above.
 
 ### 2.2. Configuration
 

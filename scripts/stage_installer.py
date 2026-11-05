@@ -12,8 +12,6 @@ import sys
 ROOT=Path(__file__).resolve().parent.parent
 FILES=("config.example.toml","README.md","README_ZH.md","LICENSE","THIRD_PARTY_NOTICES.md")
 DIRS=("browser-extension","brand")
-SCRIPTS=("Open-Wardrobe.ps1","Open-Wardrobe.sh","Guide-Wardrobe-Extension.ps1",
-         "Start-Wardrobe-Local.ps1","setup.sh","start-local.sh","Setup-Wardrobe.ps1")
 def stage(dest,goos,goarch):
     if dest.exists() and any(dest.iterdir()): raise RuntimeError("stage must be empty")
     dest.mkdir(parents=True,exist_ok=True)
@@ -25,12 +23,12 @@ def stage(dest,goos,goarch):
     subprocess.run(["go","build","-trimpath","-ldflags=-s -w","-o",str(dest/binary),"."],cwd=ROOT,env=env,check=True)
     if goos=="windows":
         subprocess.run(["go","build","-trimpath","-ldflags=-s -w -H=windowsgui","-o",str(dest/"wardrobe-host.exe"),"."],cwd=ROOT,env=env,check=True)
-        shutil.copy2(ROOT/"Setup-Wardrobe.cmd",dest/"Setup-Wardrobe.cmd")
+
     for f in FILES:shutil.copy2(ROOT/f,dest/f)
     for name in DIRS:shutil.copytree(ROOT/name,dest/name)
-    (dest/"scripts").mkdir()
-    for name in SCRIPTS:shutil.copy2(ROOT/"scripts"/name,dest/"scripts"/name)
-    for path in (dest/"wardrobe",dest/"scripts/Open-Wardrobe.sh",dest/"scripts/start-local.sh",dest/"scripts/setup.sh"):
+    if goos=="darwin":
+        subprocess.run(["go","build","-trimpath","-ldflags=-s -w","-o",str(dest/"wardrobe-open"),"./cmd/wardrobe-open"],cwd=ROOT,env=env,check=True)
+    for path in (dest/"wardrobe",):
         if path.is_file():path.chmod(0o755)
     # Explicitly forbid data, secrets, user photos or retailer adapters.
     for path in dest.rglob("*"):

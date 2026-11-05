@@ -29,9 +29,8 @@ else
   test -x "$target/wardrobe"
 fi
 test ! -e "$target/scripts/start-tunnel.sh"
-test ! -e "$target/scripts/Start-Wardrobe-Tunnel.ps1"
 if [[ "$osname" == windows ]]; then
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/smoke_native_windows.ps1 -InstallDir "$(cygpath -w "$target")"
+  python scripts/smoke_native_windows.py --install-dir "$(cygpath -w "$target")"
 fi
 # First-run acceptance is separate from the installer: config and SQLite are created
 # on demand, without a Tunnel or browser extension.
