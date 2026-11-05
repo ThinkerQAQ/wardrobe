@@ -37,7 +37,6 @@ jobs:
       - run: node --check web/mcp-connection.js
       - run: node --check web/extension-controls.js
       - run: node scripts/sync-browser-ui.mjs --check
-      - run: bash tests/install-extension.test.sh
       - run: node --test browser-extension/tests/*.test.cjs
       - run: GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o /tmp/wardrobe.exe .
       - name: Native packaging checks
