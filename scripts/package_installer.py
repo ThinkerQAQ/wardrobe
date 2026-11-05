@@ -14,7 +14,7 @@ ROOT=pathlib.Path(__file__).resolve().parent.parent
 ASSETS=ROOT/"scripts"/"installer"
 PAYLOAD=("wardrobe.exe","wardrobe-host.exe","wardrobe","browser-extension","brand","config.example.toml",
          "README.md","README_ZH.md","LICENSE","THIRD_PARTY_NOTICES.md","THIRD_PARTY_LICENSES",
-         "scripts")
+         "wardrobe-open")
 EXCLUDED={"data","private","backups",".git","runtime.env","runtime-key.dpapi","config.toml"}
 def xml(path,tag,entries):
     node=ET.Element(tag)
@@ -30,6 +30,7 @@ def prepare(stage, out, version, target):
     exe="wardrobe.exe" if target=="windows" else "wardrobe"
     required=(exe,"config.example.toml","LICENSE","browser-extension/manifest.json")
     if target=="windows": required+=("wardrobe-host.exe",)
+    if target=="darwin": required+=("wardrobe-open",)
     for name in required:
         if not (stage/name).is_file():raise ValueError("stage missing "+name)
     for path in stage.rglob("*"):
@@ -45,12 +46,11 @@ def prepare(stage, out, version, target):
     for name in PAYLOAD:
         src=stage/name
         if src.is_dir():
-            ignore=shutil.ignore_patterns("*.ps1","*.cmd","*.vbs") if name=="scripts" else None
-            shutil.copytree(src,data/name,ignore=ignore)
+            shutil.copytree(src,data/name)
         elif src.is_file():shutil.copy2(src,data/name)
     for path in data.rglob("*"):
-        if path.is_file() and path.suffix.lower() in (".ps1",".cmd",".vbs"):
-            raise ValueError("legacy Windows launcher in native installer: "+str(path))
+        if path.is_file() and path.suffix.lower() in (".ps1",".cmd",".vbs",".bat",".sh"):
+            raise ValueError("script-based launcher in native installer: "+str(path))
     for name in ("controller.qs","style.qss"):
         shutil.copy2(ASSETS/name,conf/name)
     for name in ("first-run.ui",):
@@ -100,7 +100,7 @@ Component.prototype.createOperations = function() {
         script+='    component.addOperation("Execute", "@TargetDir@/wardrobe-host.exe", "--repair-native-host");\n'
         script+='    component.addOperation("CreateShortcut", "@TargetDir@/wardrobe-host.exe", "@UserStartMenuProgramsPath@/Wardrobe/Wardrobe.lnk", "--open-ui", "workingDirectory=@TargetDir@");\n'
     elif target=="linux":
-        script+='    component.addOperation("CreateDesktopEntry", "wardrobe.desktop", "Type=Application\\nName=Wardrobe\\nExec=/bin/bash \\"@TargetDir@/scripts/Open-Wardrobe.sh\\"\\nTerminal=false\\nCategories=Utility;");\n'
+        script+='    component.addOperation("CreateDesktopEntry", "wardrobe.desktop", "Type=Application\\nName=Wardrobe\\nExec=\\\\\\"@TargetDir@/wardrobe\\\\\\" -open=true\\nTerminal=false\\nCategories=Utility;");\n'
     else:
         # macOS .dmg contains a launcher app and a maintained installation tree.
         import plistlib
@@ -111,7 +111,10 @@ Component.prototype.createOperations = function() {
             "CFBundleExecutable":"Wardrobe","CFBundleVersion":version,
             "CFBundlePackageType":"APPL"}))
         launcher=app/"MacOS/Wardrobe"
-        launcher.write_text('#!/bin/bash\nset -euo pipefail\nroot="$(cd "$(dirname "$0")/../../.." && pwd)"\nexec /bin/bash "$root/scripts/Open-Wardrobe.sh"\n')
+        native=data/"wardrobe-open"
+        if not native.is_file():
+            raise ValueError("stage missing native macOS launcher")
+        shutil.copy2(native,launcher)
         launcher.chmod(0o755)
     script+='};\n'
     script+=(ASSETS/"finish.qs").read_text().replace("__PLATFORM__",target)

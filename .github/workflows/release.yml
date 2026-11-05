@@ -44,13 +44,15 @@ jobs:
           if [ "${{ matrix.goos }}" = windows ]; then
             GOOS=windows GOARCH="${{ matrix.goarch }}" CGO_ENABLED=0 go build -trimpath -ldflags "-H=windowsgui -X main.appVersion=$(cat VERSION)" -o staging/wardrobe-host.exe .
           fi
+          if [ "${{ matrix.goos }}" = darwin ]; then
+            GOOS=darwin GOARCH="${{ matrix.goarch }}" CGO_ENABLED=0 go build -trimpath -o staging/wardrobe-open ./cmd/wardrobe-open
+          fi
           GOOS="${{ matrix.goos }}" GOARCH="${{ matrix.goarch }}" CGO_ENABLED=0 .build/tools/go-licenses save . --ignore=wardrobe --save_path="$PWD/staging/THIRD_PARTY_LICENSES"
           GOOS="${{ matrix.goos }}" GOARCH="${{ matrix.goarch }}" CGO_ENABLED=0 .build/tools/go-licenses report . --ignore=wardrobe > staging/THIRD_PARTY_LICENSES/DEPENDENCIES.csv
           cp "$(go env GOROOT)/LICENSE" staging/THIRD_PARTY_LICENSES/Go-LICENSE
           go version > staging/THIRD_PARTY_LICENSES/BUILD.txt
           cp config.example.toml LICENSE README.md README_ZH.md THIRD_PARTY_NOTICES.md VERSION staging/
           bash scripts/audit-public.sh
-          mkdir -p staging/scripts
           bash scripts/audit-public.sh
           mkdir -p staging/browser-extension
           cp browser-extension/manifest.json browser-extension/*.js browser-extension/panel.html browser-extension/panel.css staging/browser-extension/
@@ -63,13 +65,13 @@ jobs:
           bash scripts/audit-public.sh
           mkdir -p staging/browser-extension/app
           cp browser-extension/app/* staging/browser-extension/app/
+          if find staging -type f \( -name '*.ps1' -o -name '*.cmd' -o -name '*.vbs' -o -name '*.bat' -o -name '*.sh' \) | grep -q .; then
+            echo "Script payload found in distribution stage" >&2; exit 1
+          fi
           if [ "${{ matrix.goos }}" = windows ]; then
-            cp Setup-Wardrobe.cmd staging/
-            cp scripts/Setup-Wardrobe.ps1 scripts/Start-Wardrobe-Local.ps1 scripts/Open-Wardrobe.ps1 scripts/Guide-Wardrobe-Extension.ps1 staging/scripts/
             ( cd staging && zip -q -r "../wardrobe-${{ matrix.goos }}-${{ matrix.goarch }}.zip" . )
           else
-            cp scripts/setup.sh scripts/start-local.sh scripts/Open-Wardrobe.sh staging/scripts/
-            chmod +x staging/wardrobe staging/scripts/*.sh
+            chmod +x staging/wardrobe
             tar -czf "wardrobe-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" -C staging .
           fi
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

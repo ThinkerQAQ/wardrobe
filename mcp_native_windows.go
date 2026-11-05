@@ -3,13 +3,17 @@
 package main
 
 import (
+	"encoding/binary"
+	"encoding/xml"
 	"errors"
 	"fmt"
+	"golang.org/x/sys/windows/registry"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"syscall"
+	"unicode/utf16"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -99,50 +103,176 @@ func mcpSameProcess(pid int, wantedExe string, startedAt uint64) bool {
 	return current == startedAt
 }
 
-// mcpPSQuote protects dynamic paths when passing a script to PowerShell.
-func mcpPSQuote(value string) string { return "'" + strings.ReplaceAll(value, "'", "''") + "'" }
+// Windows user logon startup uses the registry Run key to launch the
+// native process directly. It does not spawn PowerShell, Bash or CMD.
+const (
+	mcpRunKeyPath = `Software\Microsoft\Windows\CurrentVersion\Run`
+	mcpRunValue   = "Wardrobe-Tunnel"
+)
 
-// mcpAutoManage changes only this application's opt-in user logon task. The
-// runtime's on-demand Native Messaging launch path works independently.
+func mcpRunCommand(executable string) string {
+	if strings.EqualFold(filepath.Base(executable), "wardrobe.exe") {
+		host := filepath.Join(filepath.Dir(executable), "wardrobe-host.exe")
+		if _, err := os.Stat(host); err == nil {
+			executable = host // Native GUI subsystem: no console at login.
+		}
+	}
+	return "\"" + filepath.Clean(executable) + "\" tunnel-run"
+}
+
+func mcpExistingRunValue(want string) (bool, error) {
+	k, err := registry.OpenKey(registry.CURRENT_USER, mcpRunKeyPath, registry.QUERY_VALUE)
+	if errors.Is(err, registry.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	defer k.Close()
+	actual, _, err := k.GetStringValue(mcpRunValue)
+	if errors.Is(err, registry.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	if !strings.EqualFold(strings.TrimSpace(actual), want) {
+		return false, errors.New("another installation owns the login startup entry")
+	}
+	return true, nil
+}
+
+// Inspect the old Task Scheduler entry before replacing it. This is used
+// only for migrating or removing the previous PowerShell-wrapped task.
+func mcpLegacyScheduledTask(executable string) (present, enabled bool, err error) {
+	cmd := exec.Command("schtasks.exe", "/query", "/tn", mcpRunValue, "/xml")
+	mcpHideProcess(cmd)
+	data, runErr := cmd.CombinedOutput()
+	data = mcpTaskXMLUTF8(data)
+	if runErr != nil {
+		message := strings.ToLower(strings.TrimSpace(string(data)))
+		if strings.Contains(message, "cannot find") ||
+			strings.Contains(message, "does not exist") ||
+			strings.Contains(message, "cannot be found") ||
+			strings.Contains(message, "找不到") ||
+			strings.Contains(message, "不存在") {
+			return false, false, nil
+		}
+		return false, false, fmt.Errorf("query legacy startup task: %w: %s", runErr, message)
+	}
+	var task struct {
+		Actions struct {
+			Exec []struct {
+				Command   string `xml:"Command"`
+				Arguments string `xml:"Arguments"`
+			} `xml:"Exec"`
+		} `xml:"Actions"`
+		Settings struct {
+			Enabled string `xml:"Enabled"`
+		} `xml:"Settings"`
+	}
+	if err := xml.Unmarshal(data, &task); err != nil {
+		return false, false, fmt.Errorf("decode legacy task: %w", err)
+	}
+	if len(task.Actions.Exec) != 1 {
+		return false, false, errors.New("another installation owns the legacy startup task")
+	}
+	action := task.Actions.Exec[0]
+	direct := strings.EqualFold(filepath.Clean(strings.Trim(action.Command, "\"")), filepath.Clean(executable)) &&
+		strings.Contains(strings.ToLower(action.Arguments), "tunnel-run")
+	legacy := strings.EqualFold(filepath.Base(action.Command), "powershell.exe") &&
+		strings.Contains(strings.ToLower(action.Arguments), strings.ToLower(filepath.Clean(executable))) &&
+		strings.Contains(strings.ToLower(action.Arguments), "tunnel-run")
+	if !direct && !legacy {
+		return false, false, errors.New("another installation owns the legacy startup task")
+	}
+	return true, !strings.EqualFold(strings.TrimSpace(task.Settings.Enabled), "false"), nil
+}
+
+func mcpTaskXMLUTF8(data []byte) []byte {
+	if len(data) >= 2 && ((data[0] == 0xff && data[1] == 0xfe) || (data[0] == 0xfe && data[1] == 0xff)) {
+		little := data[0] == 0xff
+		units := make([]uint16, 0, (len(data)-2)/2)
+		for i := 2; i+1 < len(data); i += 2 {
+			if little {
+				units = append(units, binary.LittleEndian.Uint16(data[i:i+2]))
+			} else {
+				units = append(units, binary.BigEndian.Uint16(data[i:i+2]))
+			}
+		}
+		data = []byte(string(utf16.Decode(units)))
+	} else if len(data) >= 4 && data[1] == 0 && data[3] == 0 {
+		units := make([]uint16, 0, len(data)/2)
+		for i := 0; i+1 < len(data); i += 2 {
+			units = append(units, binary.LittleEndian.Uint16(data[i:i+2]))
+		}
+		data = []byte(string(utf16.Decode(units)))
+	}
+	return []byte(strings.Replace(string(data), "encoding=\"UTF-16\"", "encoding=\"UTF-8\"", 1))
+}
+
+func mcpRemoveLegacyTask() error {
+	cmd := exec.Command("schtasks.exe", "/delete", "/tn", mcpRunValue, "/f")
+	mcpHideProcess(cmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("delete owned legacy task: %w: %s", err, strings.TrimSpace(string(mcpTaskXMLUTF8(out))))
+	}
+	return nil
+}
+
+// mcpAutoManage never depends on a script interpreter. The legacy task is
+// only removed after its action is confirmed to belong to this installation.
 func mcpAutoManage(action string, executable string) (bool, error) {
-	const task = "Wardrobe-Tunnel"
-	executable = filepath.Clean(executable)
-	runner := "& " + mcpPSQuote(executable) + " tunnel-run; exit $LASTEXITCODE"
-	runnerArgs := "-NoProfile -NonInteractive -WindowStyle Hidden -Command \"" + runner + "\""
-	quotedTask := mcpPSQuote(task)
-	// Check ownership before overwriting or removing an existing task. Accept
-	// both the old schtasks-created direct action and the new hidden wrapper.
-	script := "$ErrorActionPreference='Stop'; " +
-		"$t=Get-ScheduledTask -TaskPath '\\' -TaskName " + quotedTask + " -ErrorAction SilentlyContinue; " +
-		"if($null -ne $t) { $a=$t.Actions[0]; " +
-		"$owned=($t.Actions.Count -eq 1) -and (" +
-		"($a.Execute -ieq " + mcpPSQuote(executable) + ") -or " +
-		"(([IO.Path]::GetFileName($a.Execute) -ieq 'powershell.exe') -and " +
-		"($a.Arguments.IndexOf(" + mcpPSQuote(executable) + ",[StringComparison]::OrdinalIgnoreCase) -ge 0))" +
-		"); if(-not $owned){throw 'another installation owns the Tunnel task'} }; "
-	switch action {
-	case "status":
-		script += "if($null -ne $t -and $t.Settings.Enabled){'true'}else{'false'}"
-	case "enable":
-		script += "$user=[Security.Principal.WindowsIdentity]::GetCurrent().Name; " +
-			"$a=New-ScheduledTaskAction -Execute 'powershell.exe' -Argument " + mcpPSQuote(runnerArgs) + "; " +
-			"$p=New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited; " +
-			"$trigger=New-ScheduledTaskTrigger -AtLogOn -User $user; " +
-			"$settings=New-ScheduledTaskSettingsSet -ExecutionTimeLimit ([TimeSpan]::Zero) -MultipleInstances IgnoreNew -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries; " +
-			"Register-ScheduledTask -TaskName " + quotedTask + " -Action $a -Principal $p -Trigger $trigger -Settings $settings -Force -ErrorAction Stop | Out-Null; 'true'"
-	case "disable":
-		script += "if($null -ne $t){Unregister-ScheduledTask -TaskName " + quotedTask + " -Confirm:$false -ErrorAction Stop}; 'false'"
-	default:
+	if action != "status" && action != "enable" && action != "disable" {
 		return false, errors.New("invalid auto-start action")
 	}
-	cmd := exec.Command("powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script)
-	mcpHideProcess(cmd)
-	output, err := cmd.CombinedOutput()
+	command := mcpRunCommand(executable)
+	present, err := mcpExistingRunValue(command)
 	if err != nil {
-		// Preserve the actual Windows diagnostic rather than masking Access denied.
-		return false, fmt.Errorf("Tunnel login startup %s: %w: %s", action, err, strings.TrimSpace(string(output)))
+		return false, err
 	}
-	return strings.EqualFold(strings.TrimSpace(string(output)), "true"), nil
+	legacy, legacyEnabled, err := mcpLegacyScheduledTask(executable)
+	if err != nil {
+		return false, err
+	}
+	if action == "status" {
+		return present || legacyEnabled, nil
+	}
+	if action == "enable" {
+		k, _, err := registry.CreateKey(registry.CURRENT_USER, mcpRunKeyPath, registry.QUERY_VALUE|registry.SET_VALUE)
+		if err != nil {
+			return false, err
+		}
+		err = k.SetStringValue(mcpRunValue, command)
+		k.Close()
+		if err != nil {
+			return false, err
+		}
+		if legacy {
+			if err := mcpRemoveLegacyTask(); err != nil {
+				return true, err
+			}
+		}
+		return true, nil
+	}
+	if present {
+		k, err := registry.OpenKey(registry.CURRENT_USER, mcpRunKeyPath, registry.SET_VALUE)
+		if err != nil {
+			return false, err
+		}
+		err = k.DeleteValue(mcpRunValue)
+		k.Close()
+		if err != nil {
+			return false, err
+		}
+	}
+	if legacy {
+		if err := mcpRemoveLegacyTask(); err != nil {
+			return false, err
+		}
+	}
+	return false, nil
 }
 func mcpExeBase(executable string) string { return filepath.Base(executable) }
 

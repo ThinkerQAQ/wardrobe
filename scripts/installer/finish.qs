@@ -18,7 +18,7 @@ Component.prototype.finishFirstRun = function() {
         if (form.openExtensionCheckBox.checked) installer.executeDetached(launcher, ["--guide-extension"], target);
     } else {
         if (form.openAppCheckBox.checked) {
-            installer.executeDetached("/bin/bash", [target + "/scripts/Open-Wardrobe.sh"], target);
+            installer.executeDetached(target + "/wardrobe", ["-open=true"], target);
         }
         if (form.openExtensionCheckBox.checked) {
             QDesktopServices.openUrl("file://" + target + "/browser-extension");
