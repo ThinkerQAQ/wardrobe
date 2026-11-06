@@ -10,7 +10,7 @@ import subprocess
 import sys
 
 ROOT=Path(__file__).resolve().parent.parent
-FILES=("config.example.toml","README.md","README_ZH.md","LICENSE","THIRD_PARTY_NOTICES.md")
+FILES=("VERSION","config.example.toml","README.md","README_ZH.md","LICENSE","THIRD_PARTY_NOTICES.md")
 DIRS=("browser-extension","brand")
 def stage(dest,goos,goarch):
     if dest.exists() and any(dest.iterdir()): raise RuntimeError("stage must be empty")
@@ -20,9 +20,10 @@ def stage(dest,goos,goarch):
     if manifest["version"]!=source_version:raise RuntimeError("extension and program version differ")
     binary="wardrobe.exe" if goos=="windows" else "wardrobe"
     env=dict(os.environ,GOOS=goos,GOARCH=goarch,CGO_ENABLED="0")
-    subprocess.run(["go","build","-trimpath","-ldflags=-s -w","-o",str(dest/binary),"."],cwd=ROOT,env=env,check=True)
+    version_flags=f"-s -w -X main.appVersion={source_version}"
+    subprocess.run(["go","build","-trimpath",f"-ldflags={version_flags}","-o",str(dest/binary),"."],cwd=ROOT,env=env,check=True)
     if goos=="windows":
-        subprocess.run(["go","build","-trimpath","-ldflags=-s -w -H=windowsgui","-o",str(dest/"wardrobe-host.exe"),"."],cwd=ROOT,env=env,check=True)
+        subprocess.run(["go","build","-trimpath",f"-ldflags={version_flags} -H=windowsgui","-o",str(dest/"wardrobe-host.exe"),"."],cwd=ROOT,env=env,check=True)
 
     for f in FILES:shutil.copy2(ROOT/f,dest/f)
     for name in DIRS:shutil.copytree(ROOT/name,dest/name)
