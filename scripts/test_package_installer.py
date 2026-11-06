@@ -16,6 +16,7 @@ class InstallerTests(unittest.TestCase):
   (src/"brand/wardrobe.ico").write_bytes(b"fake-ico")
   for name in ("config.example.toml","README.md","README_ZH.md","LICENSE","THIRD_PARTY_NOTICES.md"):
    (src/name).write_text("test")
+  (src/"VERSION").write_text("1.1.4")
   (src/("wardrobe.exe" if osname=="windows" else "wardrobe")).write_bytes(b"stub")
   if osname=="windows":
    (src/"wardrobe-host.exe").write_bytes(b"native-host-stub")
@@ -29,6 +30,7 @@ class InstallerTests(unittest.TestCase):
     cfg=ET.parse(dst/"config/config.xml").getroot()
     self.assertEqual(cfg.findtext("RemoveTargetDir"),"false")
     package=dst/"packages/com.thinkerqaq.wardrobe/data"
+    self.assertEqual((package/"VERSION").read_text(),"1.1.4")
     self.assertFalse((package/"Data").exists())
     self.assertFalse((package/"Private").exists())
     self.assertTrue((package/("wardrobe.exe" if osname=="windows" else "wardrobe")).exists())
