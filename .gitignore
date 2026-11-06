@@ -33,3 +33,8 @@ Private/
 !browser-extension/icons/*.png
 
 .installer-smoke/
+
+# Local Devbox and Python development state
+.devbox/
+.venv/
+__pycache__/
