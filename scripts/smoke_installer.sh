@@ -29,6 +29,13 @@ else
   test -x "$target/wardrobe"
 fi
 test ! -e "$target/scripts/start-tunnel.sh"
+test "$(cat "$target/VERSION")" = "$(cat VERSION)"
+if [[ "$osname" == windows ]]; then
+  version_binary="$target/wardrobe.exe"
+else
+  version_binary="$target/wardrobe"
+fi
+test "$("$version_binary" version)" = "$(cat VERSION)"
 if [[ "$osname" == windows ]]; then
   python scripts/smoke_native_windows.py --install-dir "$(cygpath -w "$target")"
 fi
@@ -39,7 +46,7 @@ if [[ "$osname" != windows ]]; then
   server_pid=$!
   healthy=0
   for i in $(seq 1 50); do
-    if curl -fsS --max-time 2 http://127.0.0.1:17936/api/health 2>/dev/null | grep -q '"version":"1.1.4"'; then
+    if curl -fsS --max-time 2 http://127.0.0.1:17936/api/health 2>/dev/null | grep -q "\"version\":\"$(cat VERSION)\""; then
       healthy=1
       break
     fi
