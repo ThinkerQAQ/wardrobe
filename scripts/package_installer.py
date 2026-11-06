@@ -12,7 +12,7 @@ import xml.etree.ElementTree as ET
 
 ROOT=pathlib.Path(__file__).resolve().parent.parent
 ASSETS=ROOT/"scripts"/"installer"
-PAYLOAD=("wardrobe.exe","wardrobe-host.exe","wardrobe","browser-extension","brand","config.example.toml",
+PAYLOAD=("wardrobe.exe","wardrobe-host.exe","wardrobe","browser-extension","brand","VERSION","config.example.toml",
          "README.md","README_ZH.md","LICENSE","THIRD_PARTY_NOTICES.md","THIRD_PARTY_LICENSES",
          "wardrobe-open")
 EXCLUDED={"data","private","backups",".git","runtime.env","runtime-key.dpapi","config.toml"}
@@ -28,7 +28,9 @@ def prepare(stage, out, version, target):
     if manifest.is_file() and json.loads(manifest.read_text())["version"]!=version:
         raise ValueError("extension and installer version differ")
     exe="wardrobe.exe" if target=="windows" else "wardrobe"
-    required=(exe,"config.example.toml","LICENSE","browser-extension/manifest.json")
+    required=(exe,"VERSION","config.example.toml","LICENSE","browser-extension/manifest.json")
+    if (stage/"VERSION").is_file() and (stage/"VERSION").read_text().strip()!=version:
+        raise ValueError("staged version and installer version differ")
     if target=="windows": required+=("wardrobe-host.exe",)
     if target=="darwin": required+=("wardrobe-open",)
     for name in required:
