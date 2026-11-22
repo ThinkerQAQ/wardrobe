@@ -32,6 +32,7 @@ test('both platform buttons start background sync; stop is explicit',()=>{
 });
 test('desktop and narrow extension layouts keep sources, stats and filters usable',()=>{
  assert.match(css,/\.ordersSyncSources\{display:grid/);
+ assert.match(css,/grid-template-columns:repeat\(auto-fit,minmax\(260px,1fr\)\)/);
  assert.match(css,/\.workspaceMain \.orderStats\{display:grid/);
  assert.match(css,/\.workspaceMain \.orderFilters\{display:grid/);
  assert.match(css,/@media\(max-width:760px\)/);
