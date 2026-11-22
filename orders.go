@@ -243,6 +243,9 @@ func (s *store) orders() ([]OrderItem, error) {
 				x.LocalImage = "/media/images/" + x.ProductID + ".jpg"
 			}
 		}
+		if x.LocalImage == "" {
+			x.LocalImage = s.localOrderThumbnail(x)
+		}
 		out = append(out, x)
 	}
 	return out, rows.Err()
@@ -470,6 +473,34 @@ func (a *application) serveOrders(w http.ResponseWriter, r *http.Request) {
 			in.Limit = 100
 		}
 		result, e := a.s.organizeWearables(in.Limit)
+		if e != nil {
+			fail(w, 400, e)
+			return
+		}
+		jsonOut(w, 200, result)
+	case "/api/orders/cache-thumbnails":
+		if r.Method != "POST" {
+			http.Error(w, "method not allowed", 405)
+			return
+		}
+		var in struct {
+			After string `json:"after"`
+			Limit int    `json:"limit"`
+		}
+		d := json.NewDecoder(r.Body)
+		d.DisallowUnknownFields()
+		if e := d.Decode(&in); e != nil {
+			fail(w, 400, e)
+			return
+		}
+		if len(in.After) > 300 {
+			fail(w, 400, errors.New("invalid cursor"))
+			return
+		}
+		if in.Limit == 0 {
+			in.Limit = 5
+		}
+		result, e := a.s.cacheOrderThumbnails(r.Context(), in.After, in.Limit, wardrobeImageHTTPClient)
 		if e != nil {
 			fail(w, 400, e)
 			return

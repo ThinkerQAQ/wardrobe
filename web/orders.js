@@ -44,6 +44,39 @@
   status('当前显示 '+Math.min(list.length,2000)+' / '+list.length+' 条；仅本地存储，重复同步会按订单商品键去重。');
  }
  async function load(){if(loading)return;loading=true;try{rows=await api('orders');render()}catch(e){status('加载订单失败：'+e.message)}finally{loading=false}}
+ // Order thumbnails are independent of wardrobe inventory. Backfill all three
+ // retailers, including unpromoted orders, using only allowlisted image CDNs.
+ let orderThumbnailsRunning=false,orderThumbnailsQueued=false,orderThumbnailCursor='';
+ async function cacheOrderThumbnails(){
+  if(orderThumbnailsRunning){orderThumbnailsQueued=true;return}
+  orderThumbnailsRunning=true;
+  const label=$o('#ordersThumbnailStatus');
+  let cursor=orderThumbnailCursor,cached=0,failed=0,missing=0,attempted=0,hasMore=false;
+  try{
+   for(let round=0;round<100;round++){
+    const result=await write('orders/cache-thumbnails','POST',{after:cursor,limit:5});
+    if(!result.attempted){hasMore=false;break}
+    attempted+=result.attempted;cached+=result.cached;failed+=result.failed;missing+=result.missing_source;
+    cursor=result.next;orderThumbnailCursor=cursor;hasMore=result.has_more;
+    label.hidden=false;
+    label.textContent='订单缩略图：已归档 '+cached+' 张，失败 '+failed+' 张，来源无效 '+missing+' 张。';
+    if(cached>0&&cached%25===0)await load();
+    if(!hasMore)break;
+   }
+   if(cached)await load();
+   if(attempted){
+    label.hidden=false;
+    label.textContent='订单图片归档：成功 '+cached+' 张，失败 '+failed+' 张，来源无效 '+missing+' 张。'+(hasMore?'仍有待处理商品，下次同步继续。':'已检查本批来源。');
+   }else{label.hidden=true}
+  }catch(e){
+   label.hidden=false;
+   label.textContent='订单图片归档中断：已保存 '+cached+' 张；可刷新工作台后继续。原因：'+e.message;
+  }finally{
+   orderThumbnailsRunning=false;
+   if(!hasMore)orderThumbnailCursor='';
+   if(orderThumbnailsQueued||hasMore){orderThumbnailsQueued=false;setTimeout(cacheOrderThumbnails,750)}
+  }
+ }
  let organizing=false,caching=false,organizeQueued=false;
  async function organize({auto=false}={}){
   if(organizing){organizeQueued=true;return}
@@ -116,7 +149,7 @@
  const awaitingExtension=new Map();
  const setSyncOpen=open=>{syncPanel.hidden=!open;syncToggle.setAttribute('aria-expanded',String(open))};
  syncToggle.onclick=()=>setSyncOpen(syncPanel.hidden);
-  api('capabilities').then(c=>{syncToggle.hidden=!c.retailerSync;$o('#ordersCacheImages').hidden=!c.remoteOrderImages;if(!c.retailerSync)setSyncOpen(false)}).catch(()=>{syncToggle.hidden=true;$o('#ordersCacheImages').hidden=true;});
+  api('capabilities').then(c=>{syncToggle.hidden=!c.retailerSync;$o('#ordersCacheImages').hidden=!c.remoteOrderImages;if(!c.retailerSync)setSyncOpen(false);if(c.remoteOrderImages)cacheOrderThumbnails()}).catch(()=>{syncToggle.hidden=true;$o('#ordersCacheImages').hidden=true;});
  $o('#ordersSyncClose').onclick=()=>setSyncOpen(false);
  function sync(platform){
   const button=$o(platform==='京东'?'#ordersSyncJD':'#ordersSyncTB');button.disabled=true;
@@ -136,7 +169,8 @@
   const {platform,message}=event.detail||{};if(!message)return;
   if(platform&&awaitingExtension.has(platform)){clearTimeout(awaitingExtension.get(platform));awaitingExtension.delete(platform)}
   syncStatus.textContent=(platform?platform+'：':'')+message;
-  if(platform)$o(platform==='京东'?'#ordersSyncJD':'#ordersSyncTB').disabled=false;
+  if(platform&&/已处理|已到列表末尾|已停止|本次共处理|已保存/.test(message))cacheOrderThumbnails();
+  if(platform==='京东'||platform==='淘宝')$o(platform==='京东'?'#ordersSyncJD':'#ordersSyncTB').disabled=false;
  });
  for(const id of ['ordersPlatform','ordersScope','ordersCategory'])$o('#'+id).addEventListener('change',render);
  let timer; $o('#ordersSearch').addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(render,100)});
