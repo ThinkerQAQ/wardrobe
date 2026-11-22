@@ -209,7 +209,7 @@ button.danger:hover{background:#fff2ef;border-color:#b76554}
 .ordersSyncHeading h4{font-size:15px;color:#294333;margin:0 0 5px}
 .ordersSyncHeading p{margin:0;font-size:12px;line-height:1.6}
 #ordersSyncClose{padding:5px 10px;font-size:14px;line-height:1.5}
-.ordersSyncSources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ordersSyncSources{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
 .ordersSyncSource{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;background:#fff;border:1px solid #e2e9e2;border-radius:10px;padding:12px 14px}
 .ordersSyncSourceInfo{display:flex;flex-direction:column;gap:4px;min-width:0}
 .ordersSyncSourceInfo strong{font-size:14px;color:#324936}
