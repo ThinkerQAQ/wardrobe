@@ -35,12 +35,12 @@
   <div class="ordersHeaderActions"><button id="ordersSyncToggle" type="button" hidden class="primary" aria-expanded="false" aria-controls="ordersSyncPanel"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.7-4.3L3 9m0-5v5h5M4 13a8 8 0 0 0 14.7 4.3L21 15m0 5v-5h-5"/></svg><span>同步订单</span></button></div>
  </div>
  <section id="ordersSyncPanel" class="ordersSyncPanel" hidden aria-label="从购物网站同步订单">
-  <div class="ordersSyncHeading"><div><h4>从购物网站同步</h4><p class="meta">使用 Edge 当前登录状态，在后台访问对应订单列表并同步至本机 SQLite；不读取 Cookie，不需要导出文件。</p></div><button id="ordersSyncClose" type="button" aria-label="关闭同步面板" title="关闭">✕</button></div>
+  <div class="ordersSyncHeading"><div><h4>从购物网站同步</h4><p class="meta">使用 Edge 当前登录状态同步订单至本机 SQLite。京东和淘宝在后台读取；拼多多必须保持订单标签页在前台，以便加载历史订单。不读取 Cookie，无需导出文件。</p></div><button id="ordersSyncClose" type="button" aria-label="关闭同步面板" title="关闭">✕</button></div>
   <div class="ordersSyncSources">
    <div class="ordersSyncSource"><div class="ordersSyncSourceInfo"><strong>京东</strong><span class="meta">订单中心 · 支持增量去重</span></div><button id="ordersSyncJD" type="button" class="primary">同步京东</button></div>
    <div class="ordersSyncSource"><div class="ordersSyncSourceInfo"><strong>淘宝</strong><span class="meta">已买到的宝贝 · 支持增量去重</span></div><button id="ordersSyncTB" type="button" class="primary">同步淘宝</button></div>
   </div>
-  <p class="ordersSyncHint meta">首次同步会在后台打开相应平台的订单列表；如果网站要求登录，可手动打开页面完成登录后重新同步。当前默认列表可同步，其他年份或分页需核对覆盖范围。</p>
+  <p class="ordersSyncHint meta">首次同步会打开相应平台的订单列表；拼多多会在前台逐批加载订单，同步完成前请不要切换或关闭订单标签页。若需要登录，请先完成登录后重试；无法确认列表结束时不宣称全量。</p>
   <div class="ordersSyncFooter"><p id="ordersSyncStatus" class="ordersSyncStatus meta" role="status" aria-live="polite">未开始同步</p><button id="ordersSyncStop" type="button">停止同步</button></div>
  </section>
  <div id="ordersStats" class="orderStats" role="status" aria-live="polite"></div>
