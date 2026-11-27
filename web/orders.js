@@ -9,7 +9,7 @@
  function count(label,value){const n=document.createElement('div');n.className='orderStat';n.append(el('strong','',String(value)),el('span','meta',label));return n}
  function text(tag,cls,value){return el(tag,cls,value||'')}
  function linkTo(url,label){const a=el('a','',label);try{const u=new URL(url);if(!['https:','http:'].includes(u.protocol))throw Error('invalid');a.href=u.href;a.target='_blank';a.rel='noopener noreferrer'}catch{return text('span','meta','无有效链接')};return a}
- const cats=['','T恤与POLO','衬衫','针织衫','卫衣','外套','裤装','鞋靴','袜子','家居与保暖内搭','配饰'];
+ const cats=['','T恤与POLO','衬衫','针织衫','卫衣','外套','套装','裤装','鞋靴','袜子','家居与保暖内搭','配饰'];
  const options=(select,values,current)=>{select.replaceChildren();values.forEach(([v,label])=>{const o=el('option','',label);o.value=v;select.append(o)});select.value=current};
  const date=x=>x.ordered_at?.slice(0,19).replace('T',' ')||'日期未知';
  function render(){
@@ -81,19 +81,19 @@
  async function organize({auto=false}={}){
   if(organizing){organizeQueued=true;return}
   organizing=true;const btn=$o('#ordersOrganize');btn.disabled=true;
-  let created=0,remaining=0,errors=0,previousRemaining=Infinity;
+  let created=0,remaining=0,errors=0,review=0,previousRemaining=Infinity;
   try{
    for(let round=0;round<30;round++){
     const result=await write('orders/organize','POST',{limit:100});
     created+=result.created;errors+=result.errors;
-    remaining=result.remaining;
+    remaining=result.remaining;review=result.review||0;
     $o('#ordersCatalogStatus').textContent='整理穿搭中：新增 '+created+' 件单品，未整理 '+remaining+' 条（所有新单品默认待确认持有）';
     if(remaining===0||result.errors>=100||remaining>=previousRemaining)break;
     previousRemaining=remaining;
    }
    await load();
    products=await api('products');indexProducts();window.refreshWardrobeView?.();
-   $o('#ordersCatalogStatus').textContent='整理完成：新增 '+created+' 件穿搭单品；未处理 '+remaining+' 条、错误 '+errors+' 条。未经确认的购买不会标记为本人持有。';
+   $o('#ordersCatalogStatus').textContent='整理完成：新增 '+created+' 件穿搭单品；未处理 '+remaining+' 条、待核对 '+review+' 条、错误 '+errors+' 条。未经确认的购买不会标记为本人持有。';
    if(!auto&&created>0)toast('已整理 '+created+' 件穿搭候选，待确认实际持有');
   }catch(e){$o('#ordersCatalogStatus').textContent='整理失败：'+e.message}
   finally{
@@ -101,6 +101,23 @@
    if(organizeQueued){organizeQueued=false;setTimeout(()=>organize({auto:true}),0)}
   }
  }
+ async function repairWardrobe(){
+  const btn=$o('#ordersRepair');if(!btn||btn.disabled)return;btn.disabled=true;
+  const label=$o('#ordersCatalogStatus');
+  try{
+   const plan=await write('orders/repair-wardrobe','POST',{});
+   const duplicates=plan.actions.filter(x=>x.reason==='duplicate').length;
+   const excluded=plan.actions.filter(x=>x.reason==='non-wearable').length;
+   const detail='可归档重复 '+duplicates+' 件、非穿搭 '+excluded+' 件；需人工核对 '+plan.review.length+' 件。';
+   label.textContent=detail;
+   if(!plan.actions.length||!window.confirm(detail+'\n确认后保留原商品归档、订单及图片，是否继续？'))return;
+   const result=await write('orders/repair-wardrobe','POST',{token:plan.token});
+   await load();products=await api('products');indexProducts();window.refreshWardrobeView?.();
+   label.textContent='已安全归档 '+result.applied+' 件商品；需人工核对 '+result.review.length+' 件。';
+  }catch(e){label.textContent='修复失败：'+e.message}
+  finally{btn.disabled=false}
+ }
+ $o('#ordersRepair')?.addEventListener('click',repairWardrobe);
  let nextImageCursor='';
  async function cacheImages({auto=false}={}){
   if(caching)return;

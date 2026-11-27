@@ -69,11 +69,12 @@ func (s *store) ensureOrders() error {
 	return err
 }
 
-var nonWardrobeKeywords = []string{"鞋柜", "洗衣液", "鞋刷", "衣架", "晾衣", "洗鞋", "擦鞋", "鞋油", "衣物收纳", "服装收纳", "洗衣机", "衣服清洁", "衣物护理", "购物袋", "服装袋", "服饰专用洗", "鞋盒", "衣服架", "改衣", "衣柜", "衣服防尘罩", "衣物柔顺", "洗发露", "洗发水"}
+var nonWardrobeKeywords = []string{"滴眼液", "润眼液", "玻璃酸钠", "护理液", "隐形眼镜", "一次性手套", "塑料手套", "丁腈", "洗碗", "抽真空", "压缩袋", "收纳袋", "整理袋", "碎屏换新", "换新服务", "元e卡", "京东e卡", "购物卡", "类目满", "相机快挂", "摄影肩挂", "相机腰挂", "相机快拆", "眼镜腿脚套", "白帽子讲web安全", "防晒乳", "瑜伽垫专用", "垃圾袋", "清洁湿巾", "酒精湿巾", "酒精棉片", "酒精干湿包", "屏幕清洁", "眼镜清洁", "眼镜布", "眼镜盒", "手机膜", "钢化膜", "手机壳", "质量换新", "延长保修", "延保服务", "碎屏险", "运费险", "维修服务", "赠品", "一次性清洁手套", "家务手套", "洗碗手套", "清洁手套", "衣服收纳", "服装收纳", "鞋垫清洁", "鞋柜", "洗衣液", "鞋刷", "衣架", "晾衣", "洗鞋", "擦鞋", "鞋油", "衣物收纳", "服装收纳", "洗衣机", "衣服清洁", "衣物护理", "购物袋", "服装袋", "服饰专用洗", "鞋盒", "衣服架", "改衣", "衣柜", "衣服防尘罩", "衣物柔顺", "洗发露", "洗发水"}
 var garmentCategories = []struct {
 	Category string
 	Keywords []string
 }{
+	{"套装", []string{"运动套装", "跑步套装", "健身套装", "休闲套装", "西装套装", "男士套装", "女士套装", "速干套装", "呼吸套装", "两件套运动"}},
 	{"配饰", []string{"手套", "围巾", "丝巾", "领带", "领结", "眼镜", "墨镜", "太阳镜", "皮带", "腰带", "手表", "腕表", "帽子", "耳饰", "项链", "戒指", "手链", "手镯", "手串", "腕带", "耳环", "耳钉", "胸针", "袖扣", "发夹", "发带", "发箍", "发饰", "吊坠", "脚链", "口袋巾", "领针", "挎包", "背包", "手提包", "钱包", "斜挎包", "公文包"}},
 	{"袜子", []string{"袜子", "船袜", "丝袜", "短袜", "长袜"}},
 	{"鞋靴", []string{"皮鞋", "靴子", "切尔西", "马丁靴", "运动鞋", "跑鞋", "帆布鞋", "休闲鞋", "高帮鞋", "低帮鞋", "雪地靴", "凉鞋", "拖鞋", "球鞋", "板鞋", "乐福鞋", "布洛克鞋", "德比鞋", "牛津鞋", "鞋靴"}},
@@ -87,7 +88,12 @@ var garmentCategories = []struct {
 }
 
 func classifyOrder(name, spec string) (string, bool) {
-	s := strings.ToLower(name + " " + spec)
+	s := strings.ToLower(strings.TrimSpace(name))
+	if strings.HasPrefix(s, "【赠送") || strings.HasPrefix(s, "[赠送") {
+		return "", false
+	}
+	// A SKU description cannot turn a non-clothing title into a garment.
+	_ = spec
 	for _, bad := range nonWardrobeKeywords {
 		if strings.Contains(s, bad) {
 			return "", false
@@ -292,6 +298,18 @@ func (s *store) updateOrderDecision(key, category, owned *string) (OrderItem, er
 		return OrderItem{}, e
 	}
 	if owned != nil && productID != "" {
+		var linked, confirmed, unresolved int
+		if e = tx.QueryRow(`SELECT count(*),coalesce(sum(owned='owned'),0),coalesce(sum(owned='unknown'),0) FROM order_items WHERE product_id=?`, productID).Scan(&linked, &confirmed, &unresolved); e != nil {
+			return OrderItem{}, e
+		}
+		productOwned := oldOwned
+		if linked > 1 {
+			if confirmed > 0 {
+				productOwned = "owned"
+			} else if unresolved > 0 {
+				productOwned = "unknown"
+			}
+		}
 		var body string
 		var v int
 		if e = tx.QueryRow(`SELECT body,version FROM records WHERE kind='products' AND id=?`, productID).Scan(&body, &v); e != nil {
@@ -302,7 +320,10 @@ func (s *store) updateOrderDecision(key, category, owned *string) (OrderItem, er
 			return OrderItem{}, e
 		}
 		statuses := map[string]string{"unknown": "待确认", "owned": "本人确认持有", "returned": "已退货", "not_owned": "未拥有"}
-		product["owned"] = statuses[oldOwned]
+		// Do not discard a manually confirmed product on an unresolved order.
+		if productOwned != "unknown" || product["owned"] != "本人确认持有" {
+			product["owned"] = statuses[productOwned]
+		}
 		product["updatedAt"] = time.Now().UTC().Format(time.RFC3339)
 		var raw []byte
 		raw, e = json.Marshal(product)
@@ -329,57 +350,46 @@ func (s *store) updateOrderDecision(key, category, owned *string) (OrderItem, er
 	return OrderItem{}, sql.ErrNoRows
 }
 func (s *store) promoteOrderItem(key string) (record, error) {
+	s.productMu.Lock()
+	defer s.productMu.Unlock()
 	if len(key) > 250 || key == "" {
 		return nil, errors.New("invalid source key")
 	}
-	rows, e := s.orders()
+	var item OrderItem
+	var w, m int
+	e := s.db.QueryRow(`SELECT source_key,platform,order_id,line_id,ordered_at,shop,name,spec,url,image_url,quantity,amount,paid,order_status,refund_status,return_status,category,wearable,category_manual,owned,product_id FROM order_items WHERE source_key=?`, key).Scan(&item.SourceKey, &item.Platform, &item.OrderID, &item.LineID, &item.OrderedAt, &item.Shop, &item.Name, &item.Spec, &item.URL, &item.ImageURL, &item.Quantity, &item.Amount, &item.Paid, &item.OrderStatus, &item.RefundStatus, &item.ReturnStatus, &item.Category, &w, &m, &item.Owned, &item.ProductID)
 	if e != nil {
 		return nil, e
 	}
-	var i *OrderItem
-	for idx := range rows {
-		if rows[idx].SourceKey == key {
-			i = &rows[idx]
-			break
-		}
+	item.Wearable = w == 1
+	item.CategoryManual = m == 1
+	if !item.CategoryManual {
+		item.Category, item.Wearable = classifyOrder(item.Name, item.Spec)
 	}
-	if i == nil {
-		return nil, sql.ErrNoRows
-	}
+	i := &item
 	if !i.Wearable || i.Owned == "returned" || i.Owned == "not_owned" {
 		return nil, errors.New("item is not eligible for wardrobe")
 	}
 	if i.ProductID != "" {
 		return s.get("products", i.ProductID)
 	}
-	// Reuse only a unique exact purchase match; never guess by similar titles.
 	prior, e := s.list("products")
 	if e != nil {
 		return nil, e
 	}
-	var match record
-	ambiguous := false
-	for _, p := range prior {
-		fields, _ := p["fields"].(map[string]any)
-		name, _ := p["name"].(string)
-		spec, _ := p["spec"].(string)
-		if fields["购买平台"] != i.Platform || fields["订单编号"] != i.OrderID || strings.TrimSpace(name) != i.Name {
-			continue
-		}
-		if spec != "" && i.Spec != "" && spec != i.Spec {
-			continue
-		}
-		if match != nil {
-			ambiguous = true
-			break
-		}
-		match = p
-	}
-	if match != nil && !ambiguous {
-		if _, e = s.db.Exec("UPDATE order_items SET product_id=? WHERE source_key=?", match["id"], key); e != nil {
+	match, uncertain := matchWardrobeProduct(*i, prior)
+	if match != nil {
+		if _, e = s.db.Exec("UPDATE order_items SET product_id=? WHERE source_key=? AND product_id=''", match["id"], key); e != nil {
 			return nil, e
 		}
+		if i.Owned == "owned" && match["owned"] != "本人确认持有" {
+			match["owned"] = "本人确认持有"
+			return s.save("products", productText(match["id"]), match, match["version"].(int))
+		}
 		return match, nil
+	}
+	if uncertain {
+		return nil, errProductReview
 	}
 	// Existing source keys can be longer than the importer key limit or
 	// contain Chinese characters; map them to a deterministic ASCII key.
@@ -455,6 +465,26 @@ func (a *application) serveOrders(w http.ResponseWriter, r *http.Request) {
 			out = append(out, x)
 		}
 		jsonOut(w, 200, out)
+	case "/api/orders/repair-wardrobe":
+		if r.Method != "POST" {
+			http.Error(w, "method not allowed", 405)
+			return
+		}
+		var in struct {
+			Token string `json:"token"`
+		}
+		d := json.NewDecoder(r.Body)
+		d.DisallowUnknownFields()
+		if e := d.Decode(&in); e != nil {
+			fail(w, 400, e)
+			return
+		}
+		result, e := a.s.repairWardrobe(in.Token)
+		if e != nil {
+			fail(w, 400, e)
+			return
+		}
+		jsonOut(w, 200, result)
 	case "/api/orders/organize":
 		if r.Method != "POST" {
 			http.Error(w, "method not allowed", 405)
