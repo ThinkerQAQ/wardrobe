@@ -118,3 +118,5 @@ Edit shared UI under `web/` and run `node scripts/sync-browser-ui.mjs` to update
 ## 4. License
 
 Wardrobe Core is [MIT licensed](LICENSE). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for third-party code and materials. Native MCP lifecycle adapted from [SyndiRelay #29](https://github.com/ThinkerQAQ/syndirelay/pull/29) via [Reverfolio #40](https://github.com/ThinkerQAQ/reverfolio/pull/40).
+
+In Wardrobe, select multiple products to archive them without deleting order history or photos. Products referenced by saved outfits are protected. Use the repair action to merge verified duplicates and the image action to reuse local order thumbnails.

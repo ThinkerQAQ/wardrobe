@@ -120,3 +120,5 @@ node scripts/sync-browser-ui.mjs --check
 ## 4. License · 许可证
 
 Wardrobe Core 使用 [MIT License](LICENSE)。第三方软件及素材遵守各自许可证，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。原生 MCP 生命周期参考 [SyndiRelay #29](https://github.com/ThinkerQAQ/syndirelay/pull/29)，并适配自 [Reverfolio #40](https://github.com/ThinkerQAQ/reverfolio/pull/40)。
+
+衣橱支持多选删除（归档），保留原始订单与图片；搭配使用中的单品受到保护。修复衣橱数据可合并已核实的重复单品，补图优先复用本机订单缩略图。

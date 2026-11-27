@@ -9,6 +9,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -23,6 +25,7 @@ type OrderOrganizeResult struct {
 	Remaining int `json:"remaining"`
 	Skipped   int `json:"skipped"`
 	Errors    int `json:"errors"`
+	Review    int `json:"review"`
 }
 
 // New, conservative clothing keywords are applied only to automatic category
@@ -125,8 +128,12 @@ func (s *store) organizeWearables(limit int) (OrderOrganizeResult, error) {
 		if !v.Wearable || v.ProductID != "" || v.Owned == "returned" || v.Owned == "not_owned" {
 			continue
 		}
-		done++
 		_, err := s.promoteOrderItem(v.SourceKey)
+		if errors.Is(err, errProductReview) {
+			out.Review++
+			continue
+		}
+		done++
 		if err != nil {
 			out.Errors++
 			continue
@@ -256,78 +263,113 @@ func (s *store) cacheWardrobeImages(ctx context.Context, after string, limit int
 	if err != nil {
 		return out, err
 	}
-	sort.Slice(rows, func(i, j int) bool { return rows[i].SourceKey < rows[j].SourceKey })
-	candidates := make([]OrderItem, 0)
-	for _, v := range rows {
-		if v.SourceKey <= after || v.ProductID == "" || v.ImageURL == "" || !v.Wearable || v.Owned == "returned" || v.Owned == "not_owned" {
-			continue
-		}
-		product, e := s.get("products", v.ProductID)
-		if e != nil {
-			continue
-		}
-		image, _ := product["image"].(string)
-		if image != "" {
-			continue
-		}
-		candidates = append(candidates, v)
+	products, err := s.list("products")
+	if err != nil {
+		return out, err
 	}
-	if len(candidates) == 0 {
-		return out, nil
+	sort.Slice(products, func(i, j int) bool { return productText(products[i]["id"]) < productText(products[j]["id"]) })
+	linked := map[string][]OrderItem{}
+	for _, r := range rows {
+		if r.ImageURL != "" && r.ProductID != "" {
+			linked[r.ProductID] = append(linked[r.ProductID], r)
+		}
 	}
-	if len(candidates) > limit {
-		out.HasMore = true
-		candidates = candidates[:limit]
-	}
-	for _, v := range candidates {
-		out.Attempted++
-		out.Next = v.SourceKey
-		urls := imageCandidates(v.ImageURL)
-		if len(urls) == 0 {
-			out.MissingSource++
+	for _, p := range products {
+		id := productText(p["id"])
+		if id <= after || productText(p["image"]) != "" {
 			continue
 		}
-		product, e := s.get("products", v.ProductID)
-		if e != nil {
-			out.Failed++
-			continue
-		}
-		version, ok := product["version"].(int)
-		if !ok {
-			out.Failed++
-			continue
-		}
-		success := false
-		failureCategory := "content"
-		for _, link := range urls {
-			data, fetchErr := fetchOrderImage(ctx, link, client)
-			if fetchErr != nil {
-				var statusErr orderImageHTTPError
-				switch {
-				case errors.As(fetchErr, &statusErr):
-					failureCategory = "http"
-				case errors.Is(fetchErr, context.DeadlineExceeded), errors.Is(fetchErr, context.Canceled):
-					failureCategory = "network"
-				default:
-					var netErr interface{ Timeout() bool }
-					if errors.As(fetchErr, &netErr) && netErr.Timeout() {
-						failureCategory = "network"
+		candidates := append([]OrderItem{}, linked[id]...)
+		// Older records often have no order link. Only reuse a verified SKU or
+		// matching listing+spec, never a similar title or a generic image.
+		if len(candidates) == 0 {
+			for _, r := range rows {
+				if r.ImageURL != "" {
+					same, maybe := compareWardrobeProduct(r, p)
+					if same && !maybe {
+						candidates = append(candidates, r)
 					}
 				}
-				continue
 			}
-			_, e = s.saveProductImage(SaveImageInput{ID: v.ProductID, Version: version, ImageBase64: base64.StdEncoding.EncodeToString(data), Source: v.Platform + "订单商品图片（本机 CDN 归档）"})
-			if e == nil {
+		}
+		legacyURL := productText(recordFields(p)["历史订单主图链接"])
+		if len(candidates) == 0 && legacyURL == "" {
+			continue
+		}
+		if out.Attempted >= limit {
+			out.HasMore = true
+			break
+		}
+		out.Attempted++
+		out.Next = id
+		success := false
+		failure := ""
+		seen := map[string]bool{}
+		save := func(data []byte, source string) bool {
+			_, e := s.saveProductImage(SaveImageInput{ID: id, Version: p["version"].(int), ImageBase64: base64.StdEncoding.EncodeToString(data), Source: source})
+			if e != nil {
+				failure = "save"
+				return false
+			}
+			return true
+		}
+		// Prefer the already validated local order thumbnail to another CDN request.
+		for _, r := range candidates {
+			path := s.orderThumbnailPath(r.SourceKey, r.ImageURL)
+			if b, e := os.ReadFile(path); e == nil && len(b) <= 8<<20 && save(b, r.Platform+"订单缩略图（本地复用）") {
 				success = true
 				break
 			}
-			failureCategory = "save"
+			if r.ProductID != "" && r.ProductID != id && validID.MatchString(r.ProductID) {
+				if b, e := os.ReadFile(filepath.Join(s.dir, "images", r.ProductID+".jpg")); e == nil && len(b) <= 8<<20 && save(b, r.Platform+"同款订单图（本地复用）") {
+					success = true
+					break
+				}
+			}
+		}
+		urls := []string{}
+		for _, r := range candidates {
+			urls = append(urls, r.ImageURL)
+		}
+		if f := recordFields(p); f != nil {
+			urls = append(urls, productText(f["历史订单主图链接"]))
+		}
+		for _, raw := range urls {
+			if success {
+				break
+			}
+			for _, link := range imageCandidates(raw) {
+				if seen[link] {
+					continue
+				}
+				seen[link] = true
+				b, e := fetchOrderImage(ctx, link, client)
+				if e != nil {
+					var se orderImageHTTPError
+					if errors.As(e, &se) {
+						failure = "http"
+					} else {
+						var netErr interface{ Timeout() bool }
+						failure = "content"
+						if errors.Is(e, context.DeadlineExceeded) || errors.Is(e, context.Canceled) || errors.As(e, &netErr) && netErr.Timeout() {
+							failure = "network"
+						}
+					}
+					continue
+				}
+				if save(b, "订单商品图（本机 CDN 归档）") {
+					success = true
+					break
+				}
+			}
 		}
 		if success {
 			out.Cached++
+		} else if failure == "" {
+			out.MissingSource++
 		} else {
 			out.Failed++
-			switch failureCategory {
+			switch failure {
 			case "http":
 				out.HTTPFailures++
 			case "network":

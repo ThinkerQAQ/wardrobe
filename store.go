@@ -9,13 +9,15 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sync"
 	"time"
 )
 
 type record map[string]any
 type store struct {
-	db  *sql.DB
-	dir string
+	db        *sql.DB
+	dir       string
+	productMu sync.Mutex
 }
 
 var validID = regexp.MustCompile(`^[A-Za-z0-9_-]{1,80}$`)
@@ -30,7 +32,7 @@ func newStore(dir string) (*store, error) {
 		return nil, e
 	}
 	db.SetMaxOpenConns(1)
-	s := &store{db, dir}
+	s := &store{db: db, dir: dir}
 	_, e = db.Exec("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS records(kind TEXT NOT NULL,id TEXT NOT NULL,body TEXT NOT NULL,version INTEGER NOT NULL DEFAULT 1,PRIMARY KEY(kind,id)); CREATE TABLE IF NOT EXISTS product_import_keys(source_key TEXT PRIMARY KEY, product_id TEXT NOT NULL); CREATE TABLE IF NOT EXISTS app_settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);")
 	if e != nil {
 		db.Close()

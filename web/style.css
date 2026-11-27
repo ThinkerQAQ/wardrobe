@@ -559,3 +559,5 @@ button.danger:hover{background:#fff2ef;border-color:#b76554}
 #mcpConnectionSettings .mcp-preference{flex-direction:row}
 #mcpConnectionSettings small{letter-spacing:0}
 #mcpConnectionSettings .mcp-setup-advanced>summary{list-style:revert}
+
+.productSelectLabel{display:flex;gap:.45rem;align-items:center;padding:.5rem .7rem;font-size:.85rem}.productSelectLabel input{width:18px;height:18px} #wardrobeSelectTools{margin:.65rem 0;flex-wrap:wrap} #wardrobeSelectTools[hidden]{display:none}

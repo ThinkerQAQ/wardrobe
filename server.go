@@ -140,6 +140,37 @@ func (a *application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		jsonOut(w, 200, map[string]string{"key": key})
 		return
 	}
+	if p == "/api/products/batch-delete" {
+		if r.Method != "POST" {
+			http.Error(w, "method not allowed", 405)
+			return
+		}
+		var in struct {
+			Items []ProductDeleteSelection `json:"items"`
+		}
+		d := json.NewDecoder(r.Body)
+		d.DisallowUnknownFields()
+		if e := d.Decode(&in); e != nil {
+			fail(w, 400, e)
+			return
+		}
+		var extra any
+		if d.Decode(&extra) != io.EOF {
+			http.Error(w, "one JSON object required", 400)
+			return
+		}
+		result, e := a.s.deleteWardrobeProducts(in.Items)
+		if e != nil {
+			status := 400
+			if errors.Is(e, errConflict) {
+				status = 409
+			}
+			fail(w, status, e)
+			return
+		}
+		jsonOut(w, 200, result)
+		return
+	}
 	if p == "/api/orders" || strings.HasPrefix(p, "/api/orders/") {
 		a.serveOrders(w, r)
 		return
@@ -380,6 +411,10 @@ func (a *application) api(w http.ResponseWriter, r *http.Request) {
 	}
 	if kind == "products" {
 		body["ratingSource"] = "user"
+	}
+	if kind == "looks" {
+		a.s.productMu.Lock()
+		defer a.s.productMu.Unlock()
 	}
 	if slots, ok := body["slots"].(map[string]any); ok {
 		validSlots := map[string]bool{"outer": true, "inner": true, "mid": true, "pants": true, "socks": true, "shoes": true, "glasses": true, "hat": true, "gloves": true, "necklace": true, "watch": true, "belt": true, "scarf": true, "bag": true, "tie": true, "accessory1": true, "accessory2": true, "other": true, "hair": true}
